@@ -15,6 +15,7 @@
 #include <string>
 
 #include <utils.hpp>
+#include <Kernel.hpp>
 
 
 #ifndef REDUCTION_HPP
@@ -36,6 +37,16 @@ private:
 };
 
 std::string * getReductionOpenCL(const reductionConf & conf, const std::string & dataName);
+
+
+// Implementations
+inline unsigned int reductionConf::getNrItemsPerBlock() const {
+  return nrItemsPerBlock;
+}
+
+inline void reductionConf::setNrItemsPerBlock(unsigned int items) {
+  nrItemsPerBlock = items;
+}
 
 } // TuneBench
 
