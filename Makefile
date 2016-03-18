@@ -30,7 +30,7 @@ all: bin/Reduction.o bin/ReductionTuner
 bin/Reduction.o: $(UTILS)/bin/utils.o include/Reduction.hpp src/Reduction.cpp
 	$(CC) -o bin/Reduction.o -c src/Reduction.cpp $(CL_INCLUDES) $(CFLAGS)
 
-bin/ReductionTuner: $(CL_DEPS) bin/Reduction.o src/ReductionTuner.cpp
+bin/ReductionTuner: $(CL_DEPS) bin/Reduction.o include/configuration.hpp src/ReductionTuner.cpp
 	$(CC) -o bin/ReductionTuner src/ReductionTuner.cpp bin/Reduction.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
 clean:
