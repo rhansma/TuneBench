@@ -27,7 +27,7 @@ std::string * getReductionOpenCL(const reductionConf & conf, const std::string &
 
   // Begin kernel's template
   *code = "__kernel void reduction(__global const " + dataName + " * const restrict input, __global " + dataName + " * const restrict output) {\n"
-    "const unsigned int firstItem = (get_group_id(0) * " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0);\n"
+    "const unsigned int firstItem = (get_group_id(0) * " + isa::utils::toString(conf.getNrItemsPerBlock()) + ") + get_local_id(0);\n"
     "__local " + dataName + " buffer[" + isa::utils::toString(conf.getNrThreadsD0()) + "];\n"
     "<%DEF%>"
     "\n"

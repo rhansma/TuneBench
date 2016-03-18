@@ -33,7 +33,6 @@ const inputDataType magicValue = 42;
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * input, cl::Buffer * input_d, cl::Buffer * output_d, const unsigned int outputSize);
 
 int main(int argc, char * argv[]) {
-  bool reInit = true;
   unsigned int nrIterations = 0;
   unsigned int clPlatformID = 0;
   unsigned int clDeviceID = 0;
@@ -41,7 +40,6 @@ int main(int argc, char * argv[]) {
   unsigned int maxThreads = 0;
   unsigned int maxItems = 0;
   unsigned int inputSize = 0;
-  unsigned int outputSize = 0;
   TuneBench::reductionConf conf;
 
   try {
@@ -54,7 +52,6 @@ int main(int argc, char * argv[]) {
     maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
     maxItems = args.getSwitchArgument< unsigned int >("-max_items");
     inputSize = args.getSwitchArgument< unsigned int >("-input_size");
-    outputSize = args.getSwitchArgument< unsigned int >("-output_size");
   } catch ( isa::utils::EmptyCommandLine & err ) {
     std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -max_threads ... -max_items ... -input_size ... -output_size ..." << std::endl;
     return 1;
@@ -69,35 +66,38 @@ int main(int argc, char * argv[]) {
   std::vector< std::vector< cl::CommandQueue > > * clQueues = 0;
 
   // Allocate host memory
-  std::vector< inputDataType > input(inputSize), output(outputSize);
+  std::vector< inputDataType > input(inputSize);
   cl::Buffer input_d, output_d;
 
   std::fill(input.begin(), input.end(), magicValue);
-  std::fill(output.begin(), output.end(), 0);
 
   std::cout << std::fixed << std::endl;
   std::cout << "# inputSize outputSize nrItemsPerBlock nrThreadsD0 nrItemsD0 GB/s time stdDeviation COV" << std::endl << std::endl;
 
   for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
     conf.setNrThreadsD0(threads);
-
     for ( unsigned int items = 1; items <= maxItems; items++ ) {
-      conf.setNrItemsD0(items);
-
-      if ( inputSize % (conf.getNrThreadsD0() * conf.getNrItemsD0()) == 0 ) {
-      conf.setNrItemsPerBlock(inputSize / (conf.getNrThreadsD0() * conf.getNrItemsD0()));
-      } else {
+      if ( inputSize % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
         continue;
       }
+      conf.setNrItemsD0(items);
+      for ( unsigned int itemsPerBlock = 1; itemsPerBlock < inputSize; itemsPerBlock++ ) {
+        if ( (itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0())) > inputSize ) {
+          break;
+        } else if ( inputSize % (itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0())) != 0 ) {
+          continue;
+        }
+        conf.setNrItemsPerBlock(itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0()));
 
-      // Generate kernel
-      double gbytes = isa::utils::giga((static_cast< uint64_t >(inputSize) * sizeof(inputDataType)) + (static_cast< uint64_t >(outputSize) * sizeof(outputDataType)));
-      cl::Event clEvent;
-      cl::Kernel * kernel;
-      isa::utils::Timer timer;
-      std::string * code = TuneBench::getReductionOpenCL(conf, inputDataName);
+        // Generate kernel
+        unsigned int outputSize = inputSize / conf.getNrItemsPerBlock();
+        double gbytes = isa::utils::giga((static_cast< uint64_t >(inputSize) * sizeof(inputDataType)) + (static_cast< uint64_t >(outputSize) * sizeof(outputDataType)));
+        std::vector< outputDataType > output(outputSize);
+        cl::Event clEvent;
+        cl::Kernel * kernel;
+        isa::utils::Timer timer;
+        std::string * code = TuneBench::getReductionOpenCL(conf, inputDataName);
 
-      if ( reInit ) {
         delete clQueues;
         clQueues = new std::vector< std::vector< cl::CommandQueue > >();
         isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
@@ -106,70 +106,68 @@ int main(int argc, char * argv[]) {
         } catch ( cl::Error & err ) {
           return -1;
         }
-        reInit = false;
-      }
-      try {
-        kernel = isa::OpenCL::compile("reduction", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
-      } catch ( cl::Error & err ) {
-        std::cerr << err.what() << std::endl;
-        delete code;
-        break;
-      }
-      delete code;
-
-      cl::NDRange global(conf.getNrItemsPerBlock() * conf.getNrThreadsD0());
-      cl::NDRange local(conf.getNrThreadsD0());
-
-      kernel->setArg(0, input_d);
-      kernel->setArg(1, output_d);
-
-      try {
-        // Warm-up run
-        clQueues->at(clDeviceID)[0].finish();
-        clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
-        clEvent.wait();
-        // Tuning runs
-        for ( unsigned int iteration = 0; iteration < nrIterations; iteration++ ) {
-          timer.start();
-          clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
-          clEvent.wait();
-          timer.stop();
-        }
-        clQueues->at(clDeviceID)[0].enqueueReadBuffer(output_d, CL_TRUE, 0, output.size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
-        clEvent.wait();
-      } catch ( cl::Error & err ) {
-        std::cerr << "OpenCL kernel execution error (";
-        std::cerr << conf.print();
-        std::cerr << "), (";
-        std::cerr << isa::utils::toString(conf.getNrItemsPerBlock() * conf.getNrThreadsD0()) << "): ";
-        std::cerr << isa::utils::toString(err.err()) << std::endl;
-        delete kernel;
-        if ( err.err() == -4 || err.err() == -61 ) {
-          return -1;
-        }
-        reInit = true;
-        break;
-      }
-      delete kernel;
-
-      bool error = false;
-      for ( auto item = output.begin(); item != output.end(); ++item ) {
-        if ( *item != (magicValue * conf.getNrItemsPerBlock()) ) {
-          std::cerr << "Output error (" << conf.print() << ")." << std::endl;
-          error = true;
+        try {
+          kernel = isa::OpenCL::compile("reduction", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
+        } catch ( cl::Error & err ) {
+          std::cerr << err.what() << std::endl;
+          delete code;
           break;
         }
-      }
-      if ( error ) {
-        continue;
-      }
+        delete code;
 
-      std::cout << inputSize << " ";
-      std::cout << conf.print() << " ";
-      std::cout << std::setprecision(3);
-      std::cout << gbytes / timer.getAverageTime() << " ";
-      std::cout << std::setprecision(6);
-      std::cout << timer.getAverageTime() << " " << timer.getStandardDeviation() << " " << timer.getCoefficientOfVariation() << std::endl;
+        cl::NDRange global(inputSize / conf.getNrItemsPerBlock());
+        cl::NDRange local(conf.getNrThreadsD0());
+
+        kernel->setArg(0, input_d);
+        kernel->setArg(1, output_d);
+
+        try {
+          // Warm-up run
+          clQueues->at(clDeviceID)[0].finish();
+          clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
+          clEvent.wait();
+          // Tuning runs
+          for ( unsigned int iteration = 0; iteration < nrIterations; iteration++ ) {
+            timer.start();
+            clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
+            clEvent.wait();
+            timer.stop();
+          }
+          clQueues->at(clDeviceID)[0].enqueueReadBuffer(output_d, CL_TRUE, 0, output.size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
+          clEvent.wait();
+        } catch ( cl::Error & err ) {
+          std::cerr << "OpenCL kernel execution error (";
+          std::cerr << conf.print();
+          std::cerr << "), (";
+          std::cerr << isa::utils::toString(conf.getNrItemsPerBlock() * conf.getNrThreadsD0()) << "): ";
+          std::cerr << isa::utils::toString(err.err()) << std::endl;
+          delete kernel;
+          if ( err.err() == -4 || err.err() == -61 ) {
+            return -1;
+          }
+          break;
+        }
+        delete kernel;
+
+        bool error = false;
+        for ( auto item = output.begin(); item != output.end(); ++item ) {
+          if ( *item != (magicValue * conf.getNrItemsPerBlock()) ) {
+            std::cerr << "Output error (" << conf.print() << ")." << std::endl;
+            error = true;
+            break;
+          }
+        }
+        if ( error ) {
+          continue;
+        }
+
+        std::cout << inputSize << " ";
+        std::cout << conf.print() << " ";
+        std::cout << std::setprecision(3);
+        std::cout << gbytes / timer.getAverageTime() << " ";
+        std::cout << std::setprecision(6);
+        std::cout << timer.getAverageTime() << " " << timer.getStandardDeviation() << " " << timer.getCoefficientOfVariation() << std::endl;
+      }
     }
   }
   std::cout << std::endl;
