@@ -135,7 +135,7 @@ int main(int argc, char * argv[]) {
           clEvent.wait();
           timer.stop();
         }
-        clQueues->at(clDeviceID)[0].enqueueReadBuffer(output_d, CL_TRUE, 0, output->size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
+        clQueues->at(clDeviceID)[0].enqueueReadBuffer(output_d, CL_TRUE, 0, output.size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
         clEvent.wait();
       } catch ( cl::Error & err ) {
         std::cerr << "OpenCL kernel execution error (";
