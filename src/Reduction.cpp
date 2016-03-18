@@ -22,7 +22,7 @@ std::string reductionConf::print() const {
   return isa::utils::toString(nrItemsPerBlock) + " " + isa::OpenCL::KernelConf::print();
 }
 
-std::string * getReductionOpenCL(const reductionConf & conf, const std::string & inputDataName, const std::string & outputDataName) {
+std::string * getReductionOpenCL(const reductionConf & conf, const std::string & inputDataName, const std::string & outputDataName, const unsigned int inputSize) {
   std::string * code = new std::string();
 
   // Begin kernel's template
@@ -32,7 +32,7 @@ std::string * getReductionOpenCL(const reductionConf & conf, const std::string &
     "<%DEF%>"
     "\n"
     "// First compute phase\n"
-    "for ( unsigned int item = firstItem; item < firstItem + " + isa::utils::toString(conf.getNrItemsPerBlock()) + "; item += " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
+    "for ( unsigned int item = firstItem; (item < firstItem + " + isa::utils::toString(conf.getNrItemsPerBlock()) + ") && (item < " + isa::utils::toString(inputSize) + "); item += " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
     "<%COMPUTE%>"
     "}\n"
     "// In-thread reduce phase\n"
