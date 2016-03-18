@@ -36,7 +36,7 @@ private:
   unsigned int nrItemsPerBlock;
 };
 
-std::string * getReductionOpenCL(const reductionConf & conf, const std::string & dataName);
+std::string * getReductionOpenCL(const reductionConf & conf, const std::string & inputDataName, const std::string & outputDataName);
 
 
 // Implementations

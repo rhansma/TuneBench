@@ -96,7 +96,7 @@ int main(int argc, char * argv[]) {
         cl::Event clEvent;
         cl::Kernel * kernel;
         isa::utils::Timer timer;
-        std::string * code = TuneBench::getReductionOpenCL(conf, inputDataName);
+        std::string * code = TuneBench::getReductionOpenCL(conf, inputDataName, outputDataName);
 
         delete clQueues;
         clQueues = new std::vector< std::vector< cl::CommandQueue > >();
