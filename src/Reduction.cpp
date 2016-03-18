@@ -28,7 +28,7 @@ std::string * getReductionOpenCL(const reductionConf & conf, const std::string &
   // Begin kernel's template
   *code = "__kernel void reduction(__global const " + inputDataName + " * const restrict input, __global " + outputDataName + " * const restrict output) {\n"
     "const unsigned int firstItem = (get_group_id(0) * " + isa::utils::toString(conf.getNrItemsPerBlock()) + ") + get_local_id(0);\n"
-    "__local " + dataName + " buffer[" + isa::utils::toString(conf.getNrThreadsD0()) + "];\n"
+    "__local " + inputDataName + " buffer[" + isa::utils::toString(conf.getNrThreadsD0()) + "];\n"
     "<%DEF%>"
     "\n"
     "// First compute phase\n"
@@ -53,7 +53,7 @@ std::string * getReductionOpenCL(const reductionConf & conf, const std::string &
     "output[get_group_id(0)] = accumulator0;\n"
     "}\n"
     "}\n";
-  std::string def_sTemplate = dataName + " accumulator<%NUM%> = 0;\n";
+  std::string def_sTemplate = inputDataName + " accumulator<%NUM%> = 0;\n";
   std::string compute_sTemplate = "accumulator<%NUM%> += input[item + <%OFFSET%>];\n";
   std::string reduce_sTemplate = "accumulator0 += accumulator<%NUM%>;\n";
   // End kernel's template
