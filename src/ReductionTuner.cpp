@@ -115,7 +115,7 @@ int main(int argc, char * argv[]) {
         }
         delete code;
 
-        cl::NDRange global(inputSize / conf.getNrItemsPerBlock());
+        cl::NDRange global(conf.getNrThreadsD0() * (inputSize / conf.getNrItemsPerBlock()));
         cl::NDRange local(conf.getNrThreadsD0());
 
         kernel->setArg(0, input_d);
@@ -139,7 +139,7 @@ int main(int argc, char * argv[]) {
           std::cerr << "OpenCL kernel execution error (";
           std::cerr << conf.print();
           std::cerr << "), (";
-          std::cerr << isa::utils::toString(inputSize / conf.getNrItemsPerBlock()) << "): ";
+          std::cerr << isa::utils::toString(conf.getNrThreadsD0() * (inputSize / conf.getNrItemsPerBlock())) << "): ";
           std::cerr << isa::utils::toString(err.err()) << std::endl;
           delete kernel;
           if ( err.err() == -4 || err.err() == -61 ) {
