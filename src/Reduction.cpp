@@ -32,7 +32,7 @@ std::string * getReductionOpenCL(const reductionConf & conf, const std::string &
     "<%DEF%>"
     "\n"
     "// First compute phase\n"
-    "for ( unsigned int item = firstItem; (item < firstItem + " + isa::utils::toString(conf.getNrItemsPerBlock()) + ") && (item < " + isa::utils::toString(inputSize) + "); item += " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
+    "for ( unsigned int item = firstItem; (item < firstItem + " + isa::utils::toString(conf.getNrItemsPerBlock()) + ") && (item + " + isa::utils::toString((conf.getNrItemsD0() - 1) * conf.getNrThreadsD0()) + " < " + isa::utils::toString(inputSize) + "); item += " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
     "<%COMPUTE%>"
     "}\n"
     "// In-thread reduce phase\n"
@@ -53,7 +53,7 @@ std::string * getReductionOpenCL(const reductionConf & conf, const std::string &
     "output[get_group_id(0)] = accumulator0;\n"
     "}\n"
     "}\n";
-  std::string def_sTemplate = inputDataName + " accumulator<%NUM%> = 0;\n";
+  std::string def_sTemplate = outputDataName + " accumulator<%NUM%> = 0;\n";
   std::string compute_sTemplate = "accumulator<%NUM%> += input[item + <%OFFSET%>];\n";
   std::string reduce_sTemplate = "accumulator0 += accumulator<%NUM%>;\n";
   // End kernel's template
