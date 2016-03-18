@@ -161,7 +161,7 @@ int main(int argc, char * argv[]) {
           continue;
         }
 
-        std::cout << inputSize << " ";
+        std::cout << inputSize << " " << outputSize << " ";
         std::cout << conf.print() << " ";
         std::cout << std::setprecision(3);
         std::cout << gbytes / timer.getAverageTime() << " ";
