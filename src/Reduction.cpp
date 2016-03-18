@@ -32,7 +32,7 @@ std::string * getReductionOpenCL(const reductionConf & conf, const std::string &
     "<%DEF%>"
     "\n"
     "// First compute phase\n"
-    "for ( unsigned int item = firstItem; item < firstItem " + isa::utils::toString(conf.getNrItemsPerBlock()) + "; item += " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
+    "for ( unsigned int item = firstItem; item < firstItem + " + isa::utils::toString(conf.getNrItemsPerBlock()) + "; item += " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
     "<%COMPUTE%>"
     "}\n"
     "// In-thread reduce phase"
