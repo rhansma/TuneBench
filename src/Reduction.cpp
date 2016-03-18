@@ -86,7 +86,7 @@ std::string * getReductionOpenCL(const reductionConf & conf, const std::string &
     }
   }
   code = isa::utils::replace(code, "<%DEF%>", *def_s, true);
-  code = isa::utils::replace(code, "%COMPUTE%>", *compute_s, true);
+  code = isa::utils::replace(code, "<%COMPUTE%>", *compute_s, true);
   code = isa::utils::replace(code, "<%REDUCE%>", *reduce_s, true);
   delete def_s;
   delete compute_s;
