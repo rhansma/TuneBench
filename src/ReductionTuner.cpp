@@ -83,7 +83,7 @@ int main(int argc, char * argv[]) {
       }
       for ( unsigned int itemsPerBlock = 1; itemsPerBlock < inputSize; itemsPerBlock++ ) {
         conf.setNrItemsPerBlock(itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0()));
-        if ( conf.getItemsPerBlock() > inputSize ) {
+        if ( conf.getNrItemsPerBlock() > inputSize ) {
           break;
         } else if ( inputSize % conf.getNrItemsPerBlock() != 0 ) {
           continue;
