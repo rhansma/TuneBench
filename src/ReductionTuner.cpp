@@ -77,17 +77,17 @@ int main(int argc, char * argv[]) {
   for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
     conf.setNrThreadsD0(threads);
     for ( unsigned int items = 1; items <= maxItems; items++ ) {
+      conf.setNrItemsD0(items);
       if ( inputSize % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
         continue;
       }
-      conf.setNrItemsD0(items);
       for ( unsigned int itemsPerBlock = 1; itemsPerBlock < inputSize; itemsPerBlock++ ) {
-        if ( (itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0())) > inputSize ) {
+        conf.setNrItemsPerBlock(itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0()));
+        if ( conf.getItemsPerBlock() > inputSize ) {
           break;
-        } else if ( inputSize % (itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0())) != 0 ) {
+        } else if ( inputSize % conf.getNrItemsPerBlock() != 0 ) {
           continue;
         }
-        conf.setNrItemsPerBlock(itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0()));
 
         // Generate kernel
         unsigned int outputSize = inputSize / conf.getNrItemsPerBlock();
@@ -139,7 +139,7 @@ int main(int argc, char * argv[]) {
           std::cerr << "OpenCL kernel execution error (";
           std::cerr << conf.print();
           std::cerr << "), (";
-          std::cerr << isa::utils::toString(conf.getNrItemsPerBlock() * conf.getNrThreadsD0()) << "): ";
+          std::cerr << isa::utils::toString(inputSize / conf.getNrItemsPerBlock()) << "): ";
           std::cerr << isa::utils::toString(err.err()) << std::endl;
           delete kernel;
           if ( err.err() == -4 || err.err() == -61 ) {
