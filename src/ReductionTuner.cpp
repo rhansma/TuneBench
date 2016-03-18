@@ -141,7 +141,7 @@ int main(int argc, char * argv[]) {
         std::cerr << "OpenCL kernel execution error (";
         std::cerr << conf.print();
         std::cerr << "), (";
-        std::cerr << isa::utils::toString(conf.getNrItemsPerBlock() * conf.getNrThreadsD0()) << "):";
+        std::cerr << isa::utils::toString(conf.getNrItemsPerBlock() * conf.getNrThreadsD0()) << "): ";
         std::cerr << isa::utils::toString(err.err()) << std::endl;
         delete kernel;
         if ( err.err() == -4 || err.err() == -61 ) {
