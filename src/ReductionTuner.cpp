@@ -53,7 +53,7 @@ int main(int argc, char * argv[]) {
     maxItems = args.getSwitchArgument< unsigned int >("-max_items");
     inputSize = args.getSwitchArgument< unsigned int >("-input_size");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -max_threads ... -max_items ... -input_size ... -output_size ..." << std::endl;
+    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -max_threads ... -max_items ... -input_size ... " << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
