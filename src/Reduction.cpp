@@ -22,7 +22,7 @@ std::string reductionConf::print() const {
   return isa::utils::toString(nrItemsPerBlock) + " " + isa::OpenCL::KernelConf::print();
 }
 
-std::string * getReductionOpenCL(const reductionConf & conf, const std::string & inputDataName, const std::string & outputDataName, const unsigned int inputSize) {
+std::string * getReductionOpenCL(const reductionConf & conf, const std::string & inputDataName, const std::string & outputDataName) {
   std::string * code = new std::string();
 
   // Begin kernel's template
