@@ -23,9 +23,9 @@
 
 namespace TuneBench {
 
-class reductionConf : public isa::OpenCL::KernelConf {
+class ReductionConf : public isa::OpenCL::KernelConf {
 public:
-  reductionConf();
+  ReductionConf();
   // Get
   inline unsigned int getNrItemsPerBlock() const;
   // Set
@@ -36,15 +36,15 @@ private:
   unsigned int nrItemsPerBlock;
 };
 
-std::string * getReductionOpenCL(const reductionConf & conf, const std::string & inputDataName, const std::string & outputDataName);
+std::string * getReductionOpenCL(const ReductionConf & conf, const std::string & inputDataName, const std::string & outputDataName);
 
 
 // Implementations
-inline unsigned int reductionConf::getNrItemsPerBlock() const {
+inline unsigned int ReductionConf::getNrItemsPerBlock() const {
   return nrItemsPerBlock;
 }
 
-inline void reductionConf::setNrItemsPerBlock(unsigned int items) {
+inline void ReductionConf::setNrItemsPerBlock(unsigned int items) {
   nrItemsPerBlock = items;
 }
 

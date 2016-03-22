@@ -40,7 +40,7 @@ int main(int argc, char * argv[]) {
   unsigned int maxThreads = 0;
   unsigned int maxItems = 0;
   unsigned int inputSize = 0;
-  TuneBench::reductionConf conf;
+  TuneBench::ReductionConf conf;
 
   try {
     isa::utils::ArgumentList args(argc, argv);

@@ -16,13 +16,13 @@
 
 namespace TuneBench {
 
-reductionConf::reductionConf() : isa::OpenCL::KernelConf(), nrItemsPerBlock(1) {}
+ReductionConf::ReductionConf() : isa::OpenCL::KernelConf(), nrItemsPerBlock(1) {}
 
-std::string reductionConf::print() const {
+std::string ReductionConf::print() const {
   return isa::utils::toString(nrItemsPerBlock) + " " + isa::OpenCL::KernelConf::print();
 }
 
-std::string * getReductionOpenCL(const reductionConf & conf, const std::string & inputDataName, const std::string & outputDataName) {
+std::string * getReductionOpenCL(const ReductionConf & conf, const std::string & inputDataName, const std::string & outputDataName) {
   std::string * code = new std::string();
 
   // Begin kernel's template
