@@ -13,7 +13,9 @@
 // limitations under the License.
 
 #include <string>
+#include <vector>
 
+#include <utils.hpp>
 #include <Kernel.hpp>
 
 
@@ -35,6 +37,9 @@ private:
   bool useLocalMemory;
 };
 
+// Sequential
+template< typename T > void stencil2D(const std::vector< T > & input, std::vector< T > & output, const unsigned int width, const unsigned int padding);
+// OpenCL
 std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string & dataName, const unsigned int width, const unsigned int padding);
 
 
@@ -45,6 +50,14 @@ inline bool Stencil2DConf::getLocalMemory() const {
 
 inline void Stencil2DConf::setLocalMemory(bool local) {
   useLocalMemory = local;
+}
+
+template< typename T > void stencil2D(const std::vector< T > & input, std::vector< T > & output, const unsigned int width, const unsigned int padding) {
+  for ( unsigned int y = 0; y < width; y++ ) {
+    for ( unsigned int x = 0; x < width; x++ ) {
+      output[(y * isa::utils::pad(width, padding)) + x] = (input[((y + 1) * isa::utils::pad(width + 2, padding)) + (x + 1)] * 0.25f) + (0.15f * (input[((y) * isa::utils::pad(width + 2, padding)) + (x + 1)] + input[((y + 1) * isa::utils::pad(width + 2, padding)) + (x)] + input[((y + 1) * isa::utils::pad(width + 2, padding)) + (x + 2)] + input[((y + 2) * isa::utils::pad(width + 2, padding)) + (x + 1)])) + (0.05f * (input[((y) * isa::utils::pad(width + 2, padding)) + (x)] + input[((y) * isa::utils::pad(width + 2, padding)) + (x + 2)] + input[((y + 2) * isa::utils::pad(width + 2, padding)) + (x)] + input[((y + 2) * isa::utils::pad(width + 2, padding)) + (x + 2)]));
+    }
+  }
 }
 
 }; // TuneBench
