@@ -23,7 +23,7 @@
 #include <ArgumentList.hpp>
 #include <InitializeOpenCL.hpp>
 #include <Kernel.hpp>
-#include <Stencil2D.hpp>
+#include <Stencil.hpp>
 #include <utils.hpp>
 #include <Timer.hpp>
 #include <Stats.hpp>
