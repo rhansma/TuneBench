@@ -15,7 +15,6 @@
 #include <vector>
 #include <iostream>
 #include <exception>
-#include <algorithm>
 #include <iomanip>
 #include <ctime>
 
@@ -34,7 +33,6 @@ const inputDataType magicValue = 42;
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * input, cl::Buffer * input_d, cl::Buffer * output_d, const unsigned int outputSize);
 
 int main(int argc, char * argv[]) {
-  bool test = false;
   bool reInit = true;
   unsigned int nrIterations = 0;
   unsigned int clPlatformID = 0;
@@ -58,9 +56,8 @@ int main(int argc, char * argv[]) {
     maxItems = args.getSwitchArgument< unsigned int >("-max_items");
     matrixWidth = args.getSwitchArgument< unsigned int >("-matrix_width");
     conf.setLocalMemory(args.getSwitch("-local"));
-    test = args.getSwitch("-test");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -padding ... -max_threads ... -max_items ... -matrix_width ... [-local] [-test]" << std::endl;
+    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -padding ... -max_threads ... -max_items ... -matrix_width ... [-local]" << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
@@ -76,24 +73,20 @@ int main(int argc, char * argv[]) {
   std::vector< inputDataType > input((matrixWidth + 2) * isa::utils::pad(matrixWidth + 2, padding)), output(matrixWidth * isa::utils::pad(matrixWidth, padding)), output_c;
   cl::Buffer input_d, output_d;
 
-  if ( test ) {
-    srand(time(0));
-    for ( unsigned int y = 0; y < matrixWidth + 2; y++ ) {
-      for ( unsigned int x = 0; x < matrixWidth + 2; x++ ) {
-        if ( y == 0 || y == (matrixWidth - 1) ) {
-          input[(y * isa::utils::pad(matrixWidth + 2, padding)) + x] = 0;
-        } else if ( x == 0 || x == (matrixWidth - 1) ) {
-          input[(y * isa::utils::pad(matrixWidth + 2, padding)) + x] = 0;
-        } else {
-          input[(y * isa::utils::pad(matrixWidth + 2, padding)) + x] = std::rand() % static_cast< unsigned int >(magicValue);
-        }
+  srand(time(0));
+  for ( unsigned int y = 0; y < matrixWidth + 2; y++ ) {
+    for ( unsigned int x = 0; x < matrixWidth + 2; x++ ) {
+      if ( y == 0 || y == (matrixWidth - 1) ) {
+        input[(y * isa::utils::pad(matrixWidth + 2, padding)) + x] = 0;
+      } else if ( x == 0 || x == (matrixWidth - 1) ) {
+        input[(y * isa::utils::pad(matrixWidth + 2, padding)) + x] = 0;
+      } else {
+        input[(y * isa::utils::pad(matrixWidth + 2, padding)) + x] = std::rand() % static_cast< unsigned int >(magicValue);
       }
     }
-    output_c.resize(output.size());
-    TuneBench::stencil2D(input, output_c, matrixWidth, padding);
-  } else {
-    std::fill(input.begin(), input.end(), magicValue);
   }
+  output_c.resize(output.size());
+  TuneBench::stencil2D(input, output_c, matrixWidth, padding);
 
   std::cout << std::fixed << std::endl;
   std::cout << "# matrixWidth localMemory nrThreadsD0 nrThreadsD1 nrItemsD0 nrItemsD1 GFLOP/s time stdDeviation COV" << std::endl << std::endl;
@@ -175,26 +168,16 @@ int main(int argc, char * argv[]) {
           delete kernel;
 
           bool error = false;
-          if ( test ) {
-            for ( unsigned int y = 0; y < matrixWidth; y++ ) {
-              for ( unsigned int x = 0; x < matrixWidth; x++ ) {
-                if ( !isa::utils::same(output[(y * isa::utils::pad(matrixWidth, padding)) + x], output_c[(y * isa::utils::pad(matrixWidth, padding)) + x]) ) {
-                  std::cerr << "Output error (" << conf.print() << ")." << std::endl;
-                  error = true;
-                  break;
-                }
-              }
-              if ( error ) {
-                break;
-              }
-            }
-          } else {
-            for ( auto item = output.begin(); item != output.end(); ++item ) {
-              if ( !isa::utils::same(*item, (magicValue * 0.25f) + (magicValue * 0.6f) + (magicValue * 0.2f)) ) {
+          for ( unsigned int y = 0; y < matrixWidth; y++ ) {
+            for ( unsigned int x = 0; x < matrixWidth; x++ ) {
+              if ( !isa::utils::same(output[(y * isa::utils::pad(matrixWidth, padding)) + x], output_c[(y * isa::utils::pad(matrixWidth, padding)) + x]) ) {
                 std::cerr << "Output error (" << conf.print() << ")." << std::endl;
                 error = true;
                 break;
               }
+            }
+            if ( error ) {
+              break;
             }
           }
           if ( error ) {
