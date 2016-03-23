@@ -108,7 +108,7 @@ int main(int argc, char * argv[]) {
         }
         try {
           kernel = isa::OpenCL::compile("reduction", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
-        } catch ( cl::Error & err ) {
+        } catch ( isa::OpenCL::OpenCLError & err ) {
           std::cerr << err.what() << std::endl;
           delete code;
           break;
