@@ -85,7 +85,7 @@ int main(int argc, char * argv[]) {
         } else if ( x == 0 || x == (matrixWidth - 1) ) {
           input[(y * isa::utils::pad(matrixWidth + 2, padding)) + x] = 0;
         } else {
-          input[(y * isa::utils::pad(matrixWidth + 2, padding)) + x] = std::rand() % magicValue;
+          input[(y * isa::utils::pad(matrixWidth + 2, padding)) + x] = std::rand() % static_cast< unsigned int >(magicValue);
         }
       }
     }
