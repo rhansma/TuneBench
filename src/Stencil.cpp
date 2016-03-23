@@ -55,7 +55,7 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
     "// Store\n"
     "<%STORE%>"
     "}\n";
-  std::string def_sTemplate = "accumulator<%NUMD0%>x<%NUMD1%> = 0;\n";
+  std::string def_sTemplate = dataName + " accumulator<%NUMD0%>x<%NUMD1%> = 0;\n";
   std::string loadMain_sTemplate = "buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2), padding)) + ") + (get_local_id(0) + <%OFFSETD0%>)] = input[((outputRow + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + <%OFFSETD0%>)];\n";
   std::string loadRows_sTemplate = "buffer[(" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1())) * isa::utils::pad(((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2), padding)) + ") + (get_local_id(0) + <%OFFSETD0%>)] = input[((outputRow + " + isa::utils::toString(conf.getNrThreadsD1() * conf.getNrItemsD1()) + ") * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + <%OFFSETD0%>)];\n"
     "buffer[(" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 1) * isa::utils::pad(((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2), padding)) + ") + (get_local_id(0) + <%OFFSETD0%>)] = input[((outputRow + " + isa::utils::toString((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 1) + ") * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + <%OFFSETD0%>)];\n";
