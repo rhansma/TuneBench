@@ -105,7 +105,7 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
     delete temp;
   }
 
-  code = isa::utils::replace(code, "<%DEFPOSITION%>", *defPositions_s, true);
+  code = isa::utils::replace(code, "<%DEFPOSITION%>", *defPosition_s, true);
   code = isa::utils::replace(code, "<%DEF%>", *def_s, true);
   code = isa::utils::replace(code, "<%COMPUTE%>", *compute_s, true);
   code = isa::utils::replace(code, "<%REDUCE%>", *reduce_s, true);
