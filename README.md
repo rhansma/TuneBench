@@ -1,7 +1,7 @@
 
 # TuneBench
 
-Simple tunable OpenCL kernels for many-core accelerators.
+Simple tunable OpenCL kernels for many-core accelerators. They goal of the kernels is benchmarking performance, so they are not feature complete.
 
 ## Dependencies
 
