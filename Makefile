@@ -39,6 +39,12 @@ bin/Stencil.o: $(UTILS)/bin/utils.o include/Stencil.hpp src/Stencil.cpp
 bin/StencilTuner: $(CL_DEPS) bin/Stencil.o include/configuration.hpp src/StencilTuner.cpp
 	$(CC) -o bin/StencilTuner src/StencilTuner.cpp bin/Stencil.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
+bin/MD.o: $(UTILS)/bin/utils.o include/MD.hpp src/MD.cpp
+	$(CC) -o bin/MD.o -c src/MD.cpp $(CL_INCLUDES) $(CFLAGS)
+
+bin/MDTuner: $(CL_DEPS) bin/MD.o include/configuration.hpp src/MDTuner.cpp
+	$(CC) -o bin/MDTuner src/MDTuner.cpp bin/MD.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
 clean:
 	-@rm bin/*
 
