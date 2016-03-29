@@ -25,7 +25,7 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
     "<%DEFPOSITION%>"
     "<%DEFNEIGHBOR%>"
     "<%DEF%>"
-    "for ( const unsigned int neighbor = 0; neighbor < " + isa::utils::toString(nrAtoms) + "; neighbor += " + isa::utils::toString(conf.getNrItemsD1()) + " ) {\n"
+    "for ( unsigned int neighbor = 0; neighbor < " + isa::utils::toString(nrAtoms) + "; neighbor += " + isa::utils::toString(conf.getNrItemsD1()) + " ) {\n"
     + dataName + " inverseDistance = 0.0;\n"
     + dataName + " force = 0.0;\n"
     "<%LOADNEIGHBOR%>"
