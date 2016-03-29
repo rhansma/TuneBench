@@ -26,7 +26,7 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
     "<%DEFNEIGHBOR%>"
     "<%DEF%>"
     "for ( const unsigned int neighbor = 0; neighbor < " + isa::utils::toString(nrAtoms) + "; neighbor += " + isa::utils::toString(conf.getNrItemsD1()) + " ) {\n"
-    + dataName + " distance = 0.0;\n"
+    + dataName + " inverseDistance = 0.0;\n"
     + dataName + " force = 0.0;\n"
     "<%LOADNEIGHBOR%>"
     "<%COMPUTE%>"
@@ -40,8 +40,8 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
   std::string defNeighbor_sTemplate = dataName + "4 neighbor<%NUMD1%> = {0.0f, 0.0f, 0.0f, 0.0f};\n";
   std::string def_sTemplate = dataName + "4 accumulator<%NUMD0%>x<%NUMD1%> = {0.0f, 0.0f, 0.0f, 0.0f};\n";
   std::string loadNeighbor_sTemplate = "neighbor<%NUMD1%> = input[neighbor + <%OFFSETD1%>];\n";
-  std::string compute_sTemplate = "distance = 1.0f / (((position<%NUMD0%>.x - neighbor<%NUMD1%>.x) * (position<%NUMD0%>.x - neighbor<%NUMD1%>.x)) + ((position<%NUMD0%>.y - neighbor<%NUMD1%>.y) * (position<%NUMD0%>.y - neighbor<%NUMD1%>.y)) + ((position<%NUMD0%>.z - neighbor<%NUMD1%>.z) * (position<%NUMD0%>.z - neighbor<%NUMD1%>.z)));\n"
-    "force = (distance * distance * distance * distance) * ((" + isa::utils::toString(LJ1) + "f * distance * distance * distance) - " + isa::utils::toString(LJ2) + "f);\n"
+  std::string compute_sTemplate = "inverseDistance = 1.0f / (((position<%NUMD0%>.x - neighbor<%NUMD1%>.x) * (position<%NUMD0%>.x - neighbor<%NUMD1%>.x)) + ((position<%NUMD0%>.y - neighbor<%NUMD1%>.y) * (position<%NUMD0%>.y - neighbor<%NUMD1%>.y)) + ((position<%NUMD0%>.z - neighbor<%NUMD1%>.z) * (position<%NUMD0%>.z - neighbor<%NUMD1%>.z)));\n"
+    "force = (inverseDistance * inverseDistance * inverseDistance * inverseDistance) * ((" + isa::utils::toString(LJ1) + "f * inverseDistance * inverseDistance * inverseDistance) - " + isa::utils::toString(LJ2) + "f);\n"
     "accumulator<%NUMD0%>x<%NUMD1%>.x += (position<%NUMD0%>.x - neighbor<%NUMD1%>.x) * force;\n"
     "accumulator<%NUMD0%>x<%NUMD1%>.y += (position<%NUMD0%>.y - neighbor<%NUMD1%>.y) * force;\n"
     "accumulator<%NUMD0%>x<%NUMD1%>.z += (position<%NUMD0%>.z - neighbor<%NUMD1%>.z) * force;\n";
