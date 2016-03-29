@@ -88,7 +88,7 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
       }
     }
     def_s = isa::utils::replace(def_s, "<%NUMD0%>", d0_s, true);
-    compute_s = isa::utils::replace(compute_s, "<%NUMD0", d0_s, true);
+    compute_s = isa::utils::replace(compute_s, "<%NUMD0%>", d0_s, true);
     if ( d0 == 0 ) {
       compute_s = isa::utils::replace(compute_s, " + <%OFFSETD0%>", empty_s, true);
     } else {
