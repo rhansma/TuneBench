@@ -19,7 +19,19 @@ namespace TuneBench {
 
 std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::string & dataName, const unsigned int nrAtoms, const float LJ1, const float LJ2) {
   std::string * code = new std::string();
+  std::string LJ1_s = isa::utils::toString(LJ1);
+  std::string LJ2_s = isa::utils::toString(LJ2);
 
+  if ( LJ1_s.find(".") == std::string::npos ) {
+    LJ1_s += ".0f";
+  } else {
+    LJ1_s += "f";
+  }
+  if ( LJ2_s.find(".") == std::string::npos ) {
+    LJ2_s += ".0f";
+  } else {
+    LJ2_s += "f";
+  }
   // Begin kernel's code
   *code = "__kernel void MD(__global const " + dataName + "4 * const restrict input, __global " + dataName + "4 * const restrict output) {\n"
     "<%DEFPOSITION%>"
@@ -41,7 +53,7 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
   std::string def_sTemplate = dataName + "4 accumulator<%NUMD0%>x<%NUMD1%> = {0.0f, 0.0f, 0.0f, 0.0f};\n";
   std::string loadNeighbor_sTemplate = "neighbor<%NUMD1%> = input[neighbor + <%OFFSETD1%>];\n";
   std::string compute_sTemplate = "inverseDistance = 1.0f / (((position<%NUMD0%>.x - neighbor<%NUMD1%>.x) * (position<%NUMD0%>.x - neighbor<%NUMD1%>.x)) + ((position<%NUMD0%>.y - neighbor<%NUMD1%>.y) * (position<%NUMD0%>.y - neighbor<%NUMD1%>.y)) + ((position<%NUMD0%>.z - neighbor<%NUMD1%>.z) * (position<%NUMD0%>.z - neighbor<%NUMD1%>.z)));\n"
-    "force = (inverseDistance * inverseDistance * inverseDistance * inverseDistance) * ((" + isa::utils::toString(LJ1) + "f * inverseDistance * inverseDistance * inverseDistance) - " + isa::utils::toString(LJ2) + "f);\n"
+    "force = (inverseDistance * inverseDistance * inverseDistance * inverseDistance) * ((" + LJ1_s + " * inverseDistance * inverseDistance * inverseDistance) - " + LJ2_s + ");\n"
     "accumulator<%NUMD0%>x<%NUMD1%>.x += (position<%NUMD0%>.x - neighbor<%NUMD1%>.x) * force;\n"
     "accumulator<%NUMD0%>x<%NUMD1%>.y += (position<%NUMD0%>.y - neighbor<%NUMD1%>.y) * force;\n"
     "accumulator<%NUMD0%>x<%NUMD1%>.z += (position<%NUMD0%>.z - neighbor<%NUMD1%>.z) * force;\n";
