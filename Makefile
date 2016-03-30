@@ -46,7 +46,7 @@ bin/MDTuner: $(CL_DEPS) bin/MD.o include/configuration.hpp src/MDTuner.cpp
 	$(CC) -o bin/MDTuner src/MDTuner.cpp bin/MD.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
 bin/MDPrint: $(CL_DEPS) bin/MD.o include/configuration.hpp src/MDPrint.cpp
-	$(CC) -o bin/MDPrint src/MDPrint.cpp bin/MD.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(LDFLAGS) $(CFLAGS)
+	$(CC) -o bin/MDPrint src/MDPrint.cpp bin/MD.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
 clean:
 	-@rm bin/*
