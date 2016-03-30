@@ -25,7 +25,7 @@ DEPS := $(UTILS)/bin/ArgumentList.o $(UTILS)/bin/Timer.o $(UTILS)/bin/utils.o
 CL_DEPS := $(DEPS) $(OPENCL)/bin/Exceptions.o $(OPENCL)/bin/InitializeOpenCL.o $(OPENCL)/bin/Kernel.o 
 
 
-all: bin/Reduction.o bin/ReductionTuner bin/Stencil.o bin/StencilTuner bin/MD.o bin/MDTuner bin/MDPrint
+all: bin/Reduction.o bin/ReductionTuner bin/ReductionPrint bin/Stencil.o bin/StencilTuner bin/StencilPrint bin/MD.o bin/MDTuner bin/MDPrint
 
 bin/Reduction.o: $(UTILS)/bin/utils.o include/Reduction.hpp src/Reduction.cpp
 	$(CC) -o bin/Reduction.o -c src/Reduction.cpp $(CL_INCLUDES) $(CFLAGS)
@@ -33,11 +33,17 @@ bin/Reduction.o: $(UTILS)/bin/utils.o include/Reduction.hpp src/Reduction.cpp
 bin/ReductionTuner: $(CL_DEPS) bin/Reduction.o include/configuration.hpp src/ReductionTuner.cpp
 	$(CC) -o bin/ReductionTuner src/ReductionTuner.cpp bin/Reduction.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
+bin/ReductionPrint: $(CL_DEPS) bin/Reduction.o include/configuration.hpp src/ReductionPrint.cpp
+	$(CC) -o bin/ReductionPrint src/ReductionPrint.cpp bin/Reduction.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
 bin/Stencil.o: $(UTILS)/bin/utils.o include/Stencil.hpp src/Stencil.cpp
 	$(CC) -o bin/Stencil.o -c src/Stencil.cpp $(CL_INCLUDES) $(CFLAGS)
 
 bin/StencilTuner: $(CL_DEPS) bin/Stencil.o include/configuration.hpp src/StencilTuner.cpp
 	$(CC) -o bin/StencilTuner src/StencilTuner.cpp bin/Stencil.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
+bin/StencilPrint: $(CL_DEPS) bin/Stencil.o include/configuration.hpp src/StencilPrint.cpp
+	$(CC) -o bin/StencilPrint src/StencilPrint.cpp bin/Stencil.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
 bin/MD.o: $(UTILS)/bin/utils.o include/MD.hpp src/MD.cpp
 	$(CC) -o bin/MD.o -c src/MD.cpp $(CL_INCLUDES) $(CFLAGS)

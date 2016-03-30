@@ -102,7 +102,7 @@ int main(int argc, char * argv[]) {
         }
 
         // Generate kernel
-        // The number of operations (21) is not the real number in the code but the number of operations (less) used in the equivalent code from SHOC
+        // The number of operations (21) is not the real number in the code but the number of operations (less) used in the MD code from SHOC
         double gflops = isa::utils::giga(static_cast< uint64_t >(nrAtoms) * nrAtoms * 21);
         cl::Event clEvent;
         cl::Kernel * kernel;
