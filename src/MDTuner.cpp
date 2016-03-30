@@ -95,7 +95,7 @@ int main(int argc, char * argv[]) {
       if ( nrAtoms % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
         continue;
       }
-      for ( unsigned int items = 1; (4 * conf.getNrItemsD0()) + (8 * conf.getNrItemsD0() * items) <= maxItems; items++ ) {
+      for ( unsigned int items = 1; (4 * conf.getNrItemsD0()) + (4 * items) + (4 * conf.getNrItemsD0() * items) <= maxItems; items++ ) {
         conf.setNrItemsD1(items);
         if ( nrAtoms % (conf.getNrItemsD1()) != 0 ) {
           continue;
