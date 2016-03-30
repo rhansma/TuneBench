@@ -80,7 +80,7 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
     delete temp;
     for ( unsigned int d1 = 0; d1 < conf.getNrItemsD1(); d1++ ) {
       std::string d1_s = isa::utils::toString(d1);
-      std::string offsetD1_s = isa::utils::toString(d1 * conf.getNrItemsD1());
+      std::string offsetD1_s = isa::utils::toString(d1);
 
       temp = isa::utils::replace(&def_sTemplate, "<%NUMD1%>", d1_s);
       def_s->append(*temp);
@@ -120,7 +120,7 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
   }
   for ( unsigned int d1 = 0; d1 < conf.getNrItemsD1(); d1++ ) {
     std::string d1_s = isa::utils::toString(d1);
-    std::string offsetD1_s = isa::utils::toString(d1 * conf.getNrItemsD1());
+    std::string offsetD1_s = isa::utils::toString(d1);
     std::string * temp = 0;
 
     temp = isa::utils::replace(&defNeighbor_sTemplate, "<%NUMD1%>", d1_s);
