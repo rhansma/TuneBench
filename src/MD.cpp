@@ -53,7 +53,7 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
   std::string def_sTemplate = dataName + "4 accumulator<%NUMD0%>x<%NUMD1%> = {0.0f, 0.0f, 0.0f, 0.0f};\n";
   std::string loadNeighbor_sTemplate = "neighbor<%NUMD1%> = input[neighbor + <%OFFSETD1%>];\n";
   std::string compute_sTemplate = "inverseDistance = 1.0f / (((position<%NUMD0%>.x - neighbor<%NUMD1%>.x) * (position<%NUMD0%>.x - neighbor<%NUMD1%>.x)) + ((position<%NUMD0%>.y - neighbor<%NUMD1%>.y) * (position<%NUMD0%>.y - neighbor<%NUMD1%>.y)) + ((position<%NUMD0%>.z - neighbor<%NUMD1%>.z) * (position<%NUMD0%>.z - neighbor<%NUMD1%>.z)));\n"
-    "force = (inverseDistance * inverseDistance * inverseDistance * inverseDistance) * ((" + LJ1_s + " * inverseDistance * inverseDistance * inverseDistance) - " + LJ2_s + ");\n"
+    "force = (inverseDistance * inverseDistance * inverseDistance * inverseDistance) * ((" + LJ1_s + " * (inverseDistance * inverseDistance * inverseDistance)) - " + LJ2_s + ");\n"
     "accumulator<%NUMD0%>x<%NUMD1%>.x += (position<%NUMD0%>.x - neighbor<%NUMD1%>.x) * force;\n"
     "accumulator<%NUMD0%>x<%NUMD1%>.y += (position<%NUMD0%>.y - neighbor<%NUMD1%>.y) * force;\n"
     "accumulator<%NUMD0%>x<%NUMD1%>.z += (position<%NUMD0%>.z - neighbor<%NUMD1%>.z) * force;\n";
