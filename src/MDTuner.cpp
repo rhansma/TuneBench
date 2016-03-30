@@ -29,7 +29,7 @@
 #include <Timer.hpp>
 #include <Stats.hpp>
 
-const inputDataType magicValue = 42;
+const unsigned int magicValue = 42;
 const float LJ1 = 1.5f;
 const float LJ2 = 2.0f;
 
@@ -74,11 +74,11 @@ int main(int argc, char * argv[]) {
   cl::Buffer input_d, output_d;
 
   // Populate data structures
-  srand48(time(0));
+  srand(time(0));
   for ( unsigned int atom = 0; atom < nrAtoms; atom++ ) {
-    input[(atom * 4)] = drand48() * magicValue;
-    input[(atom * 4) + 1] = drand48() * magicValue;
-    input[(atom * 4) + 2] = drand48() * magicValue;
+    input[(atom * 4)] = rand() % magicValue;
+    input[(atom * 4) + 1] = rand() % magicValue;
+    input[(atom * 4) + 2] = rand() % magicValue;
     input[(atom * 4) + 3] = 0;
   }
   // Compute CPU control results
