@@ -25,7 +25,7 @@ DEPS := $(UTILS)/bin/ArgumentList.o $(UTILS)/bin/Timer.o $(UTILS)/bin/utils.o
 CL_DEPS := $(DEPS) $(OPENCL)/bin/Exceptions.o $(OPENCL)/bin/InitializeOpenCL.o $(OPENCL)/bin/Kernel.o 
 
 
-all: bin/Reduction.o bin/ReductionTuner bin/Stencil.o bin/StencilTuner bin/MD.o bin/MDTuner
+all: bin/Reduction.o bin/ReductionTuner bin/Stencil.o bin/StencilTuner bin/MD.o bin/MDTuner bin/MDPrint
 
 bin/Reduction.o: $(UTILS)/bin/utils.o include/Reduction.hpp src/Reduction.cpp
 	$(CC) -o bin/Reduction.o -c src/Reduction.cpp $(CL_INCLUDES) $(CFLAGS)
@@ -44,6 +44,9 @@ bin/MD.o: $(UTILS)/bin/utils.o include/MD.hpp src/MD.cpp
 
 bin/MDTuner: $(CL_DEPS) bin/MD.o include/configuration.hpp src/MDTuner.cpp
 	$(CC) -o bin/MDTuner src/MDTuner.cpp bin/MD.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
+bin/MDPrint: bin/MD.o include/configuration.hpp src/MDPrint.cpp
+	$(CC) -o bin/MDPrint src/MDPrint.cpp bin/MD.o $(INCLUDES) $(CFLAGS)
 
 clean:
 	-@rm bin/*
