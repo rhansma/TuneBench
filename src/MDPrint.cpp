@@ -12,22 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
 #include <iostream>
-#include <exception>
-#include <iomanip>
-#include <ctime>
-#include <algorithm>
 
 #include <configuration.hpp>
 
 #include <ArgumentList.hpp>
-#include <InitializeOpenCL.hpp>
 #include <Kernel.hpp>
 #include <MD.hpp>
-#include <utils.hpp>
-#include <Timer.hpp>
-#include <Stats.hpp>
 
 
 int main(int argc, char * argv[]) {
