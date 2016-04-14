@@ -47,7 +47,7 @@ template< typename T > std::string * getTriadOpenCL(isa::OpenCL::KernelConf & co
     factor_s += "f";
   }
   // Begin kernel's template
-  *code = "__kernel triad(const " + dataName + " * const restrict A, const " + dataName + " * const restrict B, " + dataName + " * const restrict C) {\n"
+  *code = "__kernel void triad(const " + dataName + " * const restrict A, const " + dataName + " * const restrict B, " + dataName + " * const restrict C) {\n"
     "unsigned int item = (get_group_id(0) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0);\n"
     "<%COMPUTE%>"
     "}\n";
