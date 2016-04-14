@@ -37,7 +37,7 @@ template< typename T > void triad(const std::vector< T > & A, const std::vector<
 
 template< typename T > std::string * getTriadOpenCL(isa::OpenCL::KernelConf & conf, std::string & dataName, const T factor) {
   std::string * code = new std::string();
-  std::string empty_s = std::to_string("");
+  std::string empty_s = isa::utils::toString("");
   std::string factor_s = std::to_string(factor);
 
   if ( factor_s.find(".") == std::string::npos ) {
@@ -69,7 +69,7 @@ template< typename T > std::string * getTriadOpenCL(isa::OpenCL::KernelConf & co
     delete temp;
   }
 
-  code = isa::utils::replace(code, "<%COMPUTE%>", compute_s, true);
+  code = isa::utils::replace(code, "<%COMPUTE%>", *compute_s, true);
   delete compute_s;
 
   return code;
