@@ -78,7 +78,7 @@ int main(int argc, char * argv[]) {
   }
   std::fill(C.begin(), C.end(), factor);
   std::fill(C_control.begin(), C_control.end(), factor);
-  TuneBench::triad(A, B, C_control, factor);
+  TuneBench::triad(A, B, C_control, static_cast< inputDataType >(factor));
 
   std::cout << std::fixed << std::endl;
   std::cout << "# inputSize nrThreadsD0 nrItemsD0 GB/s time stdDeviation COV" << std::endl << std::endl;
