@@ -57,6 +57,9 @@ bin/MDPrint: $(CL_DEPS) bin/MD.o include/configuration.hpp src/MDPrint.cpp
 bin/TriadTuner: $(CL_DEPS) include/configuration.hpp include/Triad.hpp src/TriadTuner.cpp
 	$(CC) -o bin/TriadTuner src/TriadTuner.cpp $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
+bin/TriadPrint: $(CL_DEPS) include/configuration.hpp include/Triad.hpp src/TriadPrint.cpp
+	$(CC) -o bin/TriadPrint src/TriadPrint.cpp $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
 clean:
 	-@rm bin/*
 
