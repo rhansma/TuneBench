@@ -191,21 +191,21 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
       temp = isa::utils::replace(&load_sTemplate, "<%NUMD1%>", station0_s);
       loadCompute_s->append(*temp);
       delete temp;
+      for ( unsigned int station1 = 0; station1 <= station0; station1++ ) {
+        std::string station1_s = std::to_string(station1);
+        std::string baseline_s = station0_s + "_" + station1_s;
+
+        temp = isa::utils::replace(&compute_sTemplate, "<%BASELINE%>", baseline_s);
+        temp = isa::utils::replace(temp, "<%NUMD1%>", station0_s, true);
+        temp = isa::utils::replace(temp, "<%STATION%>", station1_s, true);
+        loadCompute_s->append(*temp);
+        delete temp;
+      }
     }
     if ( sample == 0 ) {
       loadCompute_s = isa::utils::replace(loadCompute_s, " + <%OFFSETD0%>", empty_s, true);
     } else {
       loadCompute_s = isa::utils::replace(loadCompute_s, "%OFFSETD0%>", offsetD0_s, true);
-    }
-    for ( unsigned int station1 = 0; station1 <= station0; station1++ ) {
-      std::string station1_s = std::to_string(station1);
-      std::string baseline_s = station0_s + "_" + station1_s;
-
-      temp = isa::utils::replace(&compute_sTemplate, "<%BASELINE%>", baseline_s);
-      temp = isa::utils::replace(temp, "<%NUMD1%>", station0_s, true);
-      temp = isa::utils::replace(temp, "<%STATION%>", station1_s, true);
-      loadCompute_s->append(*temp);
-      delete temp;
     }
   }
 
