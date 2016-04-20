@@ -170,7 +170,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     delete temp;
     for ( unsigned int station1 = 0; station1 <= station0; station1++ ) {
       std::string station1_s = std::to_string(station1);
-      std::string baseline_s = station0_s + "_" + station1_s;
+      std::string baseline_s = station0_s + "_" + station1_s + "p";
 
       temp = isa::utils::replace(&defineBaselines_sTemplate, "<%BASELINE%>", baseline_s);
       defineBaselines_s->append(*temp);
@@ -193,7 +193,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
       delete temp;
       for ( unsigned int station1 = 0; station1 <= station0; station1++ ) {
         std::string station1_s = std::to_string(station1);
-        std::string baseline_s = station0_s + "_" + station1_s;
+        std::string baseline_s = station0_s + "_" + station1_s + "p";
 
         temp = isa::utils::replace(&compute_sTemplate, "<%BASELINE%>", baseline_s);
         temp = isa::utils::replace(temp, "<%NUMD1%>", station0_s, true);
