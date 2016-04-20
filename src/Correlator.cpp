@@ -40,7 +40,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     + dataName + "2 accumulator<%BASELINE%>01 = (0.0, 0.0);\n"
     + dataName + "2 accumulator<%BASELINE%>10 = (0.0, 0.0);\n"
     + dataName + "2 accumulator<%BASELINE%>11 = (0.0, 0.0);\n";
-  std::string load_sTemplate = "sampleStation<%NUMD1%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding) * nrPolarizations) + ") + (station * " + std::to_string(isa::utils::pad(nrSamples, padding) * nrPolarizations) + ") + ((sample + <%OFFSETD0%>) * " + std::to_string(nrPolarizations) + ")];\n";
+  std::string load_sTemplate = "sampleStation<%NUMD1%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding) * nrPolarizations) + ") + (station<%NUMD1%> * " + std::to_string(isa::utils::pad(nrSamples, padding) * nrPolarizations) + ") + ((sample + <%OFFSETD0%>) * " + std::to_string(nrPolarizations) + ")];\n";
   std::string compute_sTemplate = "accumulator<%BASELINE%>00.0 += (sampleStation<%NUMD1%>.0 * sampleStation<%STATION%>.0) - (sampleStation<%NUMD1%>.1 * (-sampleStation<%STATION%>.1));\n"
     "accumulator<%BASELINE%>00.1 += (sampleStation<%NUMD1%>.0 * (-sampleStation<%STATION%>.1)) + (sampleStation<%NUMD1%>.1 * sampleStation<%STATION%>.0);\n"
     "accumulator<%BASELINE%>01.0 += (sampleStation<%NUMD1%>.0 * sampleStation<%STATION%>.2) - (sampleStation<%NUMD1%>.1 * (-sampleStation<%STATION%>.3));\n"
