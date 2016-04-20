@@ -25,7 +25,7 @@ DEPS := $(UTILS)/bin/ArgumentList.o $(UTILS)/bin/Timer.o $(UTILS)/bin/utils.o
 CL_DEPS := $(DEPS) $(OPENCL)/bin/Exceptions.o $(OPENCL)/bin/InitializeOpenCL.o $(OPENCL)/bin/Kernel.o 
 
 
-all: bin/Reduction.o bin/ReductionTuner bin/ReductionPrint bin/Stencil.o bin/StencilTuner bin/StencilPrint bin/MD.o bin/MDTuner bin/MDPrint bin/TriadTuner bin/TriadPrint
+all: bin/Reduction.o bin/ReductionTuner bin/ReductionPrint bin/Stencil.o bin/StencilTuner bin/StencilPrint bin/MD.o bin/MDTuner bin/MDPrint bin/TriadTuner bin/TriadPrint bin/Correlator.o bin/CorrelatorPrint
 
 bin/Reduction.o: $(UTILS)/bin/utils.o include/Reduction.hpp src/Reduction.cpp
 	$(CC) -o bin/Reduction.o -c src/Reduction.cpp $(CL_INCLUDES) $(CFLAGS)
@@ -59,6 +59,12 @@ bin/TriadTuner: $(CL_DEPS) include/configuration.hpp include/Triad.hpp src/Triad
 
 bin/TriadPrint: $(CL_DEPS) include/configuration.hpp include/Triad.hpp src/TriadPrint.cpp
 	$(CC) -o bin/TriadPrint src/TriadPrint.cpp $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
+bin/Correlator.o: $(UTILS)/bin/utils.o include/Correlator.hpp src/Correlator.cpp
+	$(CC) -o bin/Correlator.o -c src/Correlator.cpp $(CL_INCLUDES) $(CFLAGS)
+
+bin/CorrelatorPrint: $(CL_DEPS) bin/Correlator.o include/configuration.hpp src/CorrelatorPrint.cpp
+	$(CC) -o bin/CorrelatorPrint src/CorrelatorPrint.cpp bin/Correlator.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
 clean:
 	-@rm bin/*
