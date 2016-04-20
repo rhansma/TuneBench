@@ -211,9 +211,11 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
 
   code = isa::utils::replace(code, "<%DEFINE_STATIONS%>", *defineStations_s, true);
   code = isa::utils::replace(code, "<%DEFINE_BASELINES%>", *defineBaselines_s, true);
-  code = isa::utils::replace(code, "<%REDUCE_AND_STORE%>", reduceStore_s, true);
+  code = isa::utils::replace(code, "<%LOAD_AND_COMPUTE%>", *loadCompute_s, true);
+  code = isa::utils::replace(code, "<%REDUCE_AND_STORE%>", *reduceStore_s, true);
   delete defineStations_s;
   delete defineBaselines_s;
+  delete loadCompute_s;
   delete reduceStore_s;
 
   return code;
