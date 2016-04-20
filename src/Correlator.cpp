@@ -205,7 +205,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     if ( sample == 0 ) {
       loadCompute_s = isa::utils::replace(loadCompute_s, " + <%OFFSETD0%>", empty_s, true);
     } else {
-      loadCompute_s = isa::utils::replace(loadCompute_s, "%OFFSETD0%>", offsetD0_s, true);
+      loadCompute_s = isa::utils::replace(loadCompute_s, "<%OFFSETD0%>", offsetD0_s, true);
     }
   }
 
