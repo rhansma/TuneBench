@@ -189,7 +189,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
       std::string station0_s = std::to_string(station0);
 
       temp = isa::utils::replace(&load_sTemplate, "<%NUMD1%>", station0_s);
-      loadCompute->append(*temp);
+      loadCompute_s->append(*temp);
       delete temp;
     }
     if ( sample == 0 ) {
