@@ -167,7 +167,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     std::string offsetD1_s = std::to_string(station0);
 
     temp = isa::utils::replace(&defineStations_sTemplate, "<%NUMD1%>", station0_s);
-    if ( station == 0 ) {
+    if ( station0 == 0 ) {
       temp = isa::utils::replace(temp, " + <%OFFSETD1%>", empty_s, true);
     } else {
       temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetD1_s, true);
