@@ -34,7 +34,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     "unsigned int threshold = 0;\n"
     "<%REDUCE_AND_STORE%>"
     "}\n";
-  std::string defineStations_sTemplate = "const unsigned int station<%NUMD1%> = get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ";\n"
+  std::string defineStations_sTemplate = "const unsigned int station<%NUMD1%> = (get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%OFFSETD1%>;\n"
     + dataName + "4 sampleStation<%NUMD1%> = (0.0, 0.0, 0.0, 0.0);\n";
   std::string defineBaselines_sTemplate = dataName + "2 accumulator<%BASELINE%>00 = (0.0, 0.0);\n"
     + dataName + "2 accumulator<%BASELINE%>01 = (0.0, 0.0);\n"
@@ -164,8 +164,14 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
 
   for ( unsigned int station0 = 0; station0 < conf.getNrItemsD1(); station0++ ) {
     std::string station0_s = std::to_string(station0);
+    std::string offsetD1_s = std::to_string(station0);
 
     temp = isa::utils::replace(&defineStations_sTemplate, "<%NUMD1%>", station0_s);
+    if ( station == 0 ) {
+      temp = isa::utils::replace(temp, " + <%OFFSETD1%>", empty_s, true);
+    } else {
+      temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetD1_s, true);
+    }
     defineStations_s->append(*temp);
     delete temp;
     for ( unsigned int station1 = 0; station1 <= station0; station1++ ) {
