@@ -104,7 +104,7 @@ int main(int argc, char * argv[]) {
       if ( nrSamples % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
         continue;
       }
-      for ( unsigned int items = 1; (1 + (5 * conf.getNrItemsD1()) + (8 * ((conf.getNrItemsD1() * (conf.getNrItemsD1() + 1)) / 2))) <= maxItems; items++ ) {
+      for ( unsigned int items = 1; (1 + (5 * items) + (8 * ((items * (items + 1)) / 2))) <= maxItems; items++ ) {
         conf.setNrItemsD1(items);
         if ( nrStations % (conf.getNrItemsD1()) != 0 ) {
           continue;
