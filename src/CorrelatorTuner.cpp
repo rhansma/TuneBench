@@ -104,14 +104,14 @@ int main(int argc, char * argv[]) {
       if ( nrSamples % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
         continue;
       }
-      for ( unsigned int items = 1; (1 + (5 * nrStations) + (8 * nrBaselines)) <= maxItems; items++ ) {
+      for ( unsigned int items = 1; (1 + (5 * conf.getNrItemsD1()) + (8 * ((conf.getNrItemsD1() * (conf.getNrItemsD1() + 1)) / 2))) <= maxItems; items++ ) {
         conf.setNrItemsD1(items);
         if ( nrStations % (conf.getNrItemsD1()) != 0 ) {
           continue;
         }
 
         // Generate kernel
-        double gflops = isa::utils::giga(static_cast< uint64_t >(nrChannels) * nrBaselines * 32);
+        double gflops = isa::utils::giga(static_cast< uint64_t >(nrChannels) * nrSamples * nrBaselines * 32);
         cl::Event clEvent;
         cl::Kernel * kernel;
         isa::utils::Timer timer;
