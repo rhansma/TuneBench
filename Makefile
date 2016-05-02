@@ -66,6 +66,9 @@ bin/Correlator.o: $(UTILS)/bin/utils.o include/Correlator.hpp src/Correlator.cpp
 bin/CorrelatorPrint: $(CL_DEPS) bin/Correlator.o include/configuration.hpp src/CorrelatorPrint.cpp
 	$(CC) -o bin/CorrelatorPrint src/CorrelatorPrint.cpp bin/Correlator.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
+bin/CorrelatorTuner: $(CL_DEPS) bin/Correlator.o include/configuration.hpp src/CorrelatorTuner.cpp
+	$(CC) -o bin/CorrelatorTuner src/CorrelatorTuner.cpp bin/Correlator.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
 clean:
 	-@rm bin/*
 
