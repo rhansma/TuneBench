@@ -129,7 +129,7 @@ int main(int argc, char * argv[]) {
           reInit = false;
         }
         try {
-          kernel = isa::OpenCL::compile("Correlator", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
+          kernel = isa::OpenCL::compile("correlator", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
         } catch ( isa::OpenCL::OpenCLError & err ) {
           std::cerr << err.what() << std::endl;
           delete code;
