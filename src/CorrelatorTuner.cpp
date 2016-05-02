@@ -90,7 +90,7 @@ int main(int argc, char * argv[]) {
   }
   // Compute CPU control results
   std::fill(output.begin(), output.end(), 0);
-  TuneBench::Correlator(input, output_c, nrChannels, nrStations, nrSamples, nrPolarizations);
+  TuneBench::correlator(input, output_c, nrChannels, nrStations, nrSamples, nrPolarizations);
 
   std::cout << std::fixed << std::endl;
   std::cout << "# nrChannels nrStations nrSamples nrPolarizations nrThreadsD0 nrItemsD0 nrItemsD1 GFLOP/s time stdDeviation COV" << std::endl << std::endl;
