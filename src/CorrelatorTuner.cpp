@@ -35,6 +35,7 @@ void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue,
 
 int main(int argc, char * argv[]) {
   bool reInit = true;
+  unsigned int padding = 0;
   unsigned int nrIterations = 0;
   unsigned int clPlatformID = 0;
   unsigned int clDeviceID = 0;
@@ -51,6 +52,7 @@ int main(int argc, char * argv[]) {
 
     clPlatformID = args.getSwitchArgument< unsigned int >("-opencl_platform");
     clDeviceID = args.getSwitchArgument< unsigned int >("-opencl_device");
+    padding = args.getSwitchArgument< unsigned int >("-padding");
     nrIterations = args.getSwitchArgument< unsigned int >("-iterations");
     vectorSize = args.getSwitchArgument< unsigned int >("-vector");
     maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
@@ -59,7 +61,7 @@ int main(int argc, char * argv[]) {
     nrStations = args.getSwitchArgument< unsigned int >("-stations");
     nrSamples = args.getSwitchArgument< unsigned int >("-samples");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -max_threads ... -max_items ... -channels ... -stations ... -samples ..." << std::endl;
+    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -padding ... -iterations ... -vector ... -max_threads ... -max_items ... -channels ... -stations ... -samples ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
