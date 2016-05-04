@@ -172,6 +172,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
 
   for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
     std::string baseline_s = std::to_string(baseline);
+    std::string baseline2_s = std::to_string(baseline * 2);
     std::string stationX_s = std::to_string(baseline * 2);
     std::string stationY_s = std::to_string((baseline * 2) + 1);
 
@@ -179,7 +180,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
       temp = isa::utils::replace(&define_sTemplate, " + <%BASELINE%>", empty_s);
       temp = isa::utils::replace(temp, "<%BASELINE%>", baseline_s, true);
     } else {
-      temp = isa::utils::replace(&define_sTemplate, "<%BASELINE%>", baseline_s);
+      temp = isa::utils::replace(&define_sTemplate, "<%BASELINE%>", baseline2_s);
     }
     temp = isa::utils::replace(temp, "<%STATION_X%>", stationX_s, true);
     temp = isa::utils::replace(temp, "<%STATION_Y%>", stationY_s, true);
