@@ -100,7 +100,7 @@ int main(int argc, char * argv[]) {
   TuneBench::generateBaselineMap(baselineMap, nrStations);
 
   std::cout << std::fixed << std::endl;
-  std::cout << "# nrChannels nrStations nrSamples nrPolarizations nrThreadsD0 nrItemsD0 nrItemsD1 GFLOP/s time stdDeviation COV" << std::endl << std::endl;
+  std::cout << "# nrChannels nrStations nrSamples nrPolarizations *configuration* GFLOP/s time stdDeviation COV" << std::endl << std::endl;
 
   for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
     conf.setNrThreadsD0(threads);
