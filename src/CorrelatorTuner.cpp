@@ -150,6 +150,7 @@ int main(int argc, char * argv[]) {
 
           kernel->setArg(0, input_d);
           kernel->setArg(1, output_d);
+          kernel->setArg(2, baselineMap_d);
 
           try {
             // Warm-up run
