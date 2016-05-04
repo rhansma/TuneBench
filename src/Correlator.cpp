@@ -176,6 +176,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
 
     if ( baseline == 0 ) {
       temp = isa::utils::replace(&define_sTemplate, " + <%BASELINE%>", empty_s);
+      temp = isa::utils::replace(temp, "<%BASELINE%>", baseline_s, true);
     } else {
       temp = isa::utils::replace(&define_sTemplate, "<%BASELINE%>", baseline_s);
     }
