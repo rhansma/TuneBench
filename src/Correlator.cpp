@@ -231,8 +231,8 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
 void generateBaselineMap(std::vector< unsigned int > & baselineMap, const unsigned int nrStations) {
   for ( unsigned int station0 = 0; station0 < nrStations; station0++ ) {
     for ( unsigned int station1 = 0; station1 <= station0; station1++ ) {
-      baselineMap[(station0 * ((station0 * (station0 - 1)) / 2)) + station1] = station0;
-      baselineMap[(station0 * ((station0 * (station0 - 1)) / 2)) + station1 + 1] = station1;
+      baselineMap[((station0 * (station0 + 1)) / 2) + station1] = station0;
+      baselineMap[((station0 * (station0 + 1)) / 2) + station1 + 1] = station1;
     }
   }
 }
