@@ -37,8 +37,8 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     "}\n";
   std::string define_sTemplate = "const unsigned int station<%STATION_X%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + <%BASELINE%>];\n"
     "const unsigned int station<%STATION_Y%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + <%BASELINE%> + 1];\n"
-    + dataName + "4 sampleStation<%STATION_X%> = (0.0, 0.0, 0.0, 0.0);\n";
-    + dataName + "4 sampleStation<%STATION_Y%> = (0.0, 0.0, 0.0, 0.0);\n";
+    + dataName + "4 sampleStation<%STATION_X%> = (0.0, 0.0, 0.0, 0.0);\n"
+    + dataName + "4 sampleStation<%STATION_Y%> = (0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "2 accumulator<%BASELINE%>00 = (0.0, 0.0);\n"
     + dataName + "2 accumulator<%BASELINE%>01 = (0.0, 0.0);\n"
     + dataName + "2 accumulator<%BASELINE%>10 = (0.0, 0.0);\n"
