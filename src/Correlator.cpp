@@ -36,8 +36,8 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     "unsigned int threshold = 0;\n"
     "<%REDUCE_AND_STORE%>"
     "}\n";
-  std::string define_sTemplate = "const unsigned int station<%STATION_X%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + <%BASELINE%>];\n"
-    "const unsigned int station<%STATION_Y%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + <%BASELINE%> + 1];\n"
+  std::string define_sTemplate = "const unsigned int station<%STATION_X%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + (<%BASELINE%> * 2)];\n"
+    "const unsigned int station<%STATION_Y%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + (<%BASELINE%> * 2) + 1];\n"
     + dataName + "4 sampleStation<%STATION_X%> = (0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "4 sampleStation<%STATION_Y%> = (0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "2 accumulator<%BASELINE%>00 = (0.0, 0.0);\n"
@@ -172,15 +172,14 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
 
   for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
     std::string baseline_s = std::to_string(baseline);
-    std::string baseline2_s = std::to_string(baseline * 2);
     std::string stationX_s = std::to_string(baseline * 2);
     std::string stationY_s = std::to_string((baseline * 2) + 1);
 
     if ( baseline == 0 ) {
-      temp = isa::utils::replace(&define_sTemplate, " + <%BASELINE%>", empty_s);
+      temp = isa::utils::replace(&define_sTemplate, " + (<%BASELINE%> * 2)", empty_s);
       temp = isa::utils::replace(temp, "<%BASELINE%>", baseline_s, true);
     } else {
-      temp = isa::utils::replace(&define_sTemplate, "<%BASELINE%>", baseline2_s);
+      temp = isa::utils::replace(&define_sTemplate, "<%BASELINE%>", baseline_s);
     }
     temp = isa::utils::replace(temp, "<%STATION_X%>", stationX_s, true);
     temp = isa::utils::replace(temp, "<%STATION_Y%>", stationY_s, true);
