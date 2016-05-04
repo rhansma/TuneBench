@@ -54,7 +54,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     "accumulator<%BASELINE%>01.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.w));\n"
     "accumulator<%BASELINE%>01.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.z);\n"
     "accumulator<%BASELINE%>10.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.y));\n"
-    "accumulator<%BASELINE%>10.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.w);\n"
+    "accumulator<%BASELINE%>10.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.x);\n"
     "accumulator<%BASELINE%>11.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.w));\n"
     "accumulator<%BASELINE%>11.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.z);\n";
   std::string reduceStore_sTemplate = "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
