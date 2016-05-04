@@ -86,15 +86,17 @@ int main(int argc, char * argv[]) {
     for ( unsigned int station = 0; station < nrStations; station++ ) {
       for ( unsigned int sample = 0; sample < nrSamples; sample++ ) {
         for ( unsigned int polarization = 0; polarization < nrPolarizations; polarization++ ) {
-          input[(channel * nrStations * nrSamples * nrPolarizations * 2) + (station * nrSamples * nrPolarizations * 2) + (sample * nrPolarizations * 2) + (polarization * 2)] = rand() % magicValue;
-          input[(channel * nrStations * nrSamples * nrPolarizations * 2) + (station * nrSamples * nrPolarizations * 2) + (sample * nrPolarizations * 2) + (polarization * 2) + 1] = rand() % magicValue;
+          // Real
+          input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization * 2)] = rand() % magicValue;
+          // Imaginary
+          input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization * 2) + 1] = rand() % magicValue;
         }
       }
     }
   }
   // Compute CPU control results
   std::fill(output.begin(), output.end(), 0);
-  TuneBench::correlator(input, output_c, nrChannels, nrStations, nrSamples, nrPolarizations);
+  TuneBench::correlator(input, output_c, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
   TuneBench::generateBaselineMap(baselineMap, nrStations);
 
   std::cout << std::fixed << std::endl;
