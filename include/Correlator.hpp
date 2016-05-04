@@ -36,7 +36,7 @@ template< typename T > void correlator(const std::vector< T > & input, std::vect
   for ( unsigned int channel = 0; channel < nrChannels; channel++ ) {
     for ( unsigned int station0 = 0; station0 < nrStations; station0++ ) {
       for ( unsigned int station1 = 0; station1 <= station0; station1++ ) {
-        const unsigned int baseline = ((station1 * (station1 + 1)) / 2) + station0;
+        const unsigned int baseline = ((station0 * (station0 + 1)) / 2) + station1;
 
         for ( unsigned int polarization0 = 0; polarization0 < nrPolarizations; polarization0++ ) {
           for ( unsigned int polarization1 = 0; polarization1 < nrPolarizations; polarization1++ ) {
