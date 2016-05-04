@@ -174,7 +174,11 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     std::string stationX_s = std::to_string(baseline * 2);
     std::string stationY_s = std::to_string((baseline * 2) + 1);
 
-    temp = isa::utils::replace(&define_sTemplate, "<%BASELINE%>", baseline_s);
+    if ( baseline == 0 ) {
+      temp = isa::utils::replace(&define_sTemplate, " + <%BASELINE%>", empty_s);
+    } else {
+      temp = isa::utils::replace(&define_sTemplate, "<%BASELINE%>", baseline_s);
+    }
     temp = isa::utils::replace(temp, "<%STATION_X%>", stationX_s, true);
     temp = isa::utils::replace(temp, "<%STATION_Y%>", stationY_s, true);
     define_s->append(*temp);
