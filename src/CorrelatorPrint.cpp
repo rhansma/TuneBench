@@ -31,6 +31,7 @@ int main(int argc, char * argv[]) {
     isa::utils::ArgumentList args(argc, argv);
 
     conf.setNrThreadsD0(args.getSwitchArgument< unsigned int >("-threads_d0"));
+    conf.setNrThreadsD2(args.getSwitchArgument< unsigned int >("-threads_d2"));
     conf.setNrItemsD0(args.getSwitchArgument< unsigned int >("-items_d0"));
     conf.setNrItemsD1(args.getSwitchArgument< unsigned int >("-items_d1"));
     nrChannels = args.getSwitchArgument< unsigned int >("-channels");
@@ -38,7 +39,7 @@ int main(int argc, char * argv[]) {
     nrSamples = args.getSwitchArgument< unsigned int >("-samples");
     padding = args.getSwitchArgument< unsigned int >("-padding");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -threads_d0 ... -items_d0 ... -items_d1 ... -channels ... -stations ... -samples ... -padding ..." << std::endl;
+    std::cerr << argv[0] << " -threads_d0 ... -threads_d2 ... -items_d0 ... -items_d1 ... -channels ... -stations ... -samples ... -padding ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
