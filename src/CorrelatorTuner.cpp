@@ -170,7 +170,7 @@ int main(int argc, char * argv[]) {
             std::cerr << "OpenCL kernel execution error (";
             std::cerr << conf.print();
             std::cerr << "): ";
-            std::cerr << std::to_strin(err.err()) << std::endl;
+            std::cerr << std::to_string(err.err()) << std::endl;
             delete kernel;
             if ( err.err() == -4 || err.err() == -61 ) {
               return -1;
