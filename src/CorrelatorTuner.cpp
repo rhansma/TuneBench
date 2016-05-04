@@ -75,7 +75,7 @@ int main(int argc, char * argv[]) {
 
   // Allocate host memory
   unsigned int nrBaselines = (nrStations * (nrStations + 1)) / 2;
-  std::vector< inputDataType > input(nrChannels * nrStations * nrSamples * nrPolarizations * 2);
+  std::vector< inputDataType > input(nrChannels * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding));
   std::vector< inputDataType > output(nrChannels * nrBaselines * nrPolarizations * nrPolarizations * 2), output_c(nrChannels * nrBaselines * nrPolarizations * nrPolarizations * 2);
   std::vector< unsigned int > baselineMap(nrBaselines * 2);
   cl::Buffer input_d, output_d, baselineMap_d;
