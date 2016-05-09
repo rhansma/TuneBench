@@ -38,12 +38,12 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     "}\n";
   std::string define_sTemplate = "const unsigned int station<%STATION_X%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + (<%BASELINE%> * 2)];\n"
     "const unsigned int station<%STATION_Y%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + (<%BASELINE%> * 2) + 1];\n"
-    + dataName + "4 sampleStation<%STATION_X%> = (0.0, 0.0, 0.0, 0.0);\n"
-    + dataName + "4 sampleStation<%STATION_Y%> = (0.0, 0.0, 0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>00 = (0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>01 = (0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>10 = (0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>11 = (0.0, 0.0);\n";
+    + dataName + "4 sampleStation<%STATION_X%> = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
+    + dataName + "4 sampleStation<%STATION_Y%> = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
+    + dataName + "2 accumulator<%BASELINE%>00 = (" + dataName + "2)(0.0, 0.0);\n"
+    + dataName + "2 accumulator<%BASELINE%>01 = (" + dataName + "2)(0.0, 0.0);\n"
+    + dataName + "2 accumulator<%BASELINE%>10 = (" + dataName + "2)(0.0, 0.0);\n"
+    + dataName + "2 accumulator<%BASELINE%>11 = (" + dataName + "2)(0.0, 0.0);\n";
   std::string load_sTemplate = "sampleStation<%STATION_X%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION_X%> * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n"
     "if ( station<%STATION_X%> == station<%STATION_Y%> ) {\n"
     "sampleStation<%STATION_Y%> = sampleStation<%STATION_X%>;\n"
