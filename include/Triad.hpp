@@ -60,6 +60,7 @@ template< typename T > std::string * getTriadOpenCL(TriadConf & conf, std::strin
   std::string * code = new std::string();
   std::string empty_s = isa::utils::toString("");
   std::string factor_s = std::to_string(factor);
+  std::string vectorDataName = dataName;
 
   if ( factor_s.find(".") == std::string::npos ) {
     factor_s += ".0";
@@ -68,10 +69,10 @@ template< typename T > std::string * getTriadOpenCL(TriadConf & conf, std::strin
     factor_s += "f";
   }
   if ( conf.getVector() > 1 ) {
-    dataName += std::to_string(conf.getVector());
+    vectorDataName += std::to_string(conf.getVector());
   }
   // Begin kernel's template
-  *code = "__kernel void triad(__global const " + dataName + " * const restrict A, __global const " + dataName + " * const restrict B, __global " + dataName + " * const restrict C) {\n"
+  *code = "__kernel void triad(__global const " + vectorDataName + " * const restrict A, __global const " + vectorDataName + " * const restrict B, __global " + vectorDataName + " * const restrict C) {\n"
     "unsigned int item = (get_group_id(0) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0);\n"
     "<%COMPUTE%>"
     "}\n";
