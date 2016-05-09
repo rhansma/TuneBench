@@ -25,7 +25,7 @@ DEPS := $(UTILS)/bin/ArgumentList.o $(UTILS)/bin/Timer.o $(UTILS)/bin/utils.o
 CL_DEPS := $(DEPS) $(OPENCL)/bin/Exceptions.o $(OPENCL)/bin/InitializeOpenCL.o $(OPENCL)/bin/Kernel.o 
 
 
-all: bin/Reduction.o bin/ReductionTuner bin/ReductionPrint bin/Stencil.o bin/StencilTuner bin/StencilPrint bin/MD.o bin/MDTuner bin/MDPrint bin/TriadTuner bin/TriadPrint bin/Correlator.o bin/CorrelatorPrint bin/CorrelatorTuner
+all: bin/Reduction.o bin/ReductionTuner bin/ReductionPrint bin/Stencil.o bin/StencilTuner bin/StencilPrint bin/MD.o bin/MDTuner bin/MDPrint bin/Triad.o bin/TriadTuner bin/TriadPrint bin/Correlator.o bin/CorrelatorPrint bin/CorrelatorTuner
 
 bin/Reduction.o: $(UTILS)/bin/utils.o include/Reduction.hpp src/Reduction.cpp
 	$(CC) -o bin/Reduction.o -c src/Reduction.cpp $(CL_INCLUDES) $(CFLAGS)
@@ -54,11 +54,14 @@ bin/MDTuner: $(CL_DEPS) bin/MD.o include/configuration.hpp src/MDTuner.cpp
 bin/MDPrint: $(CL_DEPS) bin/MD.o include/configuration.hpp src/MDPrint.cpp
 	$(CC) -o bin/MDPrint src/MDPrint.cpp bin/MD.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
-bin/TriadTuner: $(CL_DEPS) include/configuration.hpp include/Triad.hpp src/TriadTuner.cpp
-	$(CC) -o bin/TriadTuner src/TriadTuner.cpp $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+bin/Triad.o: include/Triad.hpp src/Triad.cpp
+	$(CC) -o bin/Triad.o -c src/Triad.cpp $(CL_INCLUDES) $(CFLAGS)
 
-bin/TriadPrint: $(CL_DEPS) include/configuration.hpp include/Triad.hpp src/TriadPrint.cpp
-	$(CC) -o bin/TriadPrint src/TriadPrint.cpp $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+bin/TriadTuner: $(CL_DEPS) include/configuration.hpp bin/Triad.o src/TriadTuner.cpp
+	$(CC) -o bin/TriadTuner src/TriadTuner.cpp bin/Triad.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
+bin/TriadPrint: $(CL_DEPS) include/configuration.hpp bin/Triad.o src/TriadPrint.cpp
+	$(CC) -o bin/TriadPrint src/TriadPrint.cpp bin/Triad.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
 bin/Correlator.o: $(UTILS)/bin/utils.o include/Correlator.hpp src/Correlator.cpp
 	$(CC) -o bin/Correlator.o -c src/Correlator.cpp $(CL_INCLUDES) $(CFLAGS)

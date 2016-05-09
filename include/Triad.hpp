@@ -22,20 +22,41 @@
 
 namespace TuneBench {
 
+class TriadConf : public isa::OpenCL::KernelConf {
+public:
+  TriadConf();
+  // Get
+  unsigned int getVector() const;
+  // Set
+  void setVector(unsigned int vector);
+  // utils
+  std::string print() const;
+private:
+  unsigned int vector;
+};
+
 // Sequential
 template< typename T > void triad(const std::vector< T > & A, const std::vector< T > & B, std::vector< T > & C, const T factor);
 // OpenCL
-template< typename T > std::string * getTriadOpenCL(isa::OpenCL::KernelConf & conf, std::string & dataName, const T factor);
+template< typename T > std::string * getTriadOpenCL(TriadConf & conf, std::string & dataName, const T factor);
 
 
 // Implementations
+inline unsigned int TriadConf::getVector() const {
+  return vector;
+}
+
+inline void TriadConf::setVector(unsigned int vector) {
+  *(this->vector) = vector;
+}
+
 template< typename T > void triad(const std::vector< T > & A, const std::vector< T > & B, std::vector< T > & C, const T factor) {
   for ( unsigned int item = 0; item < C.size(); item++ ) {
     C[item] = A[item] + (factor * B[item]);
   }
 }
 
-template< typename T > std::string * getTriadOpenCL(isa::OpenCL::KernelConf & conf, std::string & dataName, const T factor) {
+template< typename T > std::string * getTriadOpenCL(TriadConf & conf, std::string & dataName, const T factor) {
   std::string * code = new std::string();
   std::string empty_s = isa::utils::toString("");
   std::string factor_s = std::to_string(factor);
@@ -45,6 +66,9 @@ template< typename T > std::string * getTriadOpenCL(isa::OpenCL::KernelConf & co
   }
   if ( dataName == "float" ) {
     factor_s += "f";
+  }
+  if ( conf.getVector() > 1 ) {
+    dataName += std::to_string(conf.getVector());
   }
   // Begin kernel's template
   *code = "__kernel void triad(__global const " + dataName + " * const restrict A, __global const " + dataName + " * const restrict B, __global " + dataName + " * const restrict C) {\n"
