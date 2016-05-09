@@ -54,7 +54,7 @@ int main(int argc, char * argv[]) {
     vectorSize = args.getSwitchArgument< unsigned int >("-vector");
     maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
     maxItems = args.getSwitchArgument< unsigned int >("-max_items");
-    maxVector = args.getSwitchArgument< unsiged int >("-max_vector");
+    maxVector = args.getSwitchArgument< unsigned int >("-max_vector");
     inputSize = args.getSwitchArgument< unsigned int >("-input_size");
   } catch ( isa::utils::EmptyCommandLine & err ) {
     std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -max_threads ... -max_items ... -max_vector ... -input_size ... " << std::endl;
