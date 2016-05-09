@@ -93,6 +93,8 @@ int main(int argc, char * argv[]) {
         conf.setVector(vector);
         if ( inputSize % (conf.getNrThreadsD0() * conf.getNrItemsD0() * conf.getVector()) != 0 ) {
           continue;
+        } else if ( conf.getNrItemsD0() * conf.getVector() > maxItems ) {
+          break;
         }
 
         // Generate kernel
