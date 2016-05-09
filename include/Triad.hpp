@@ -47,7 +47,7 @@ inline unsigned int TriadConf::getVector() const {
 }
 
 inline void TriadConf::setVector(unsigned int vector) {
-  *(this->vector) = vector;
+  this->vector = vector;
 }
 
 template< typename T > void triad(const std::vector< T > & A, const std::vector< T > & B, std::vector< T > & C, const T factor) {
