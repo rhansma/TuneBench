@@ -36,7 +36,9 @@ if COMMAND == "list":
         print("Usage: \"" + sys.argv[0] + " list\"")
         print("List all tables in " + config.DATABASE + ".")
     else:
-        management.print_tuples(management.list_tables(DB_QUEUE))
+        RESULTS = management.list_tables(DB_QUEUE)
+        for item in RESULTS:
+            management.print_tuples(item)
 elif COMMAND == "create":
     if len(sys.argv) != 4:
         print("Usage: \"" + sys.argv[0] + " create <table> <benchmark>\"")
