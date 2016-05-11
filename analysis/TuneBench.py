@@ -23,7 +23,7 @@ import tuning
 import statistics
 
 if len(sys.argv) == 1:
-    print("Supported commmands are: list, create, delete, load, tune, quartiles, histogram")
+    print("Supported commmands are: list_tables, create, delete, load, list_values, tune, quartiles, histogram")
     print("Type \"" + sys.argv[0] + " <command>\" for specific help.")
     sys.exit(1)
 
@@ -31,10 +31,10 @@ COMMAND = sys.argv[1]
 DB_CONNECTION = pymysql.connect(host=config.HOST, port=config.PORT, user=config.USER, password=config.PASSWORD, db=config.DATABASE)
 DB_QUEUE = DB_CONNECTION.cursor()
 
-if COMMAND == "list":
+if COMMAND == "list_tables":
     if len(sys.argv) != 2:
-        print("Usage: \"" + sys.argv[0] + " list\"")
-        print("List all tables in " + config.DATABASE + ".")
+        print("Usage: \"" + sys.argv[0] + " list_tables\"")
+        print("Lists all tables in " + config.DATABASE + ".")
     else:
         RESULTS = management.list_tables(DB_QUEUE)
         for item in RESULTS:
@@ -80,6 +80,18 @@ elif COMMAND == "load":
         INPUT_FILE = open(sys.argv[3])
         management.load_file(DB_QUEUE, sys.argv[2], INPUT_FILE, sys.argv[4])
         INPUT_FILE.close()
+elif COMMAND == "list_values":
+    if len(sys.argv) < 4 or len(sys.argv) > 5:
+        print("Usage: \"" + sys.argv[0] + " list_values <table> <field> [scenario]\"")
+        print("Lists the distinct values in the table's field.")
+    elif len(sys.argv) == 4:
+        RESULTS = management.list_values(DB_QUEUE, sys.argv[2], sys.argv[3], "")
+        for item in RESULTS:
+            management.print_tuples(item)
+    else:
+        RESULTS = management.list_values(DB_QUEUE, sys.argv[2], sys.argv[3], sys.argv[4])
+        for item in RESULTS:
+            management.print_tuples(item)
 elif COMMAND == "tune":
     if len(sys.argv) != 5:
         print("Usage: \"" + sys.argv[0] + " tune <table> <benchmark> <scenario>\"")

@@ -25,6 +25,14 @@ def list_tables(db_queue):
     db_queue.execute("SHOW TABLES")
     return db_queue.fetchall()
 
+def list_values(db_queue, table, field, scenario):
+    """Returns the list of unique values for a table's field."""
+    if scenario != "":
+        db_queue.execute("SELECT DISTINCT " + field + " FROM " + table + " WHERE (" + scenario + ") ORDER BY " + field)
+    else:
+        db_queue.execute("SELECT DISTINCT " + field + " FROM " + table + " ORDER BY " + field)
+    return db_queue.fetchall()
+
 def create_table(db_queue, table, scenario, extra, metrics):
     """Create a table to store the tuning data in the database."""
     db_queue.execute("CREATE TABLE " +  table + "(id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, " + scenario + " " + extra + " nrThreadsD0 INTEGER NOT NULL, nrThreadsD1 INTEGER NOT NULL, nrThreadsD2 INTEGER NOT NULL, nrItemsD0 INTEGER NOT NULL, nrItemsD1 INTEGER NOT NULL, nrItemsD2 INTEGER NOT NULL, " + metrics + " time FLOAT UNSIGNED NOT NULL, time_err FLOAT UNSIGNED NOT NULL, variation FLOAT UNSIGNED NOT NULL)")
