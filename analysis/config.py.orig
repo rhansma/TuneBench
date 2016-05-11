@@ -1,0 +1,11 @@
+"""Configuration file for the TuneBench analysis script."""
+
+# Connection
+HOST = "127.0.0.1"
+PORT = 3306
+USER = "user"
+PASSWORD = "password"
+
+# Database
+DATABASE = "TUNEBENCH_DB"
+
