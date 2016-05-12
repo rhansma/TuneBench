@@ -82,14 +82,13 @@ int main(int argc, char * argv[]) {
       conf.setNrItemsD0(items);
       for ( unsigned int itemsPerBlock = 1; itemsPerBlock < inputSize; itemsPerBlock++ ) {
         conf.setNrItemsPerBlock(itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0()));
-        if ( conf.getNrItemsPerBlock() > inputSize ) {
-          break;
-        } else if ( inputSize % conf.getNrItemsPerBlock() != 0 ) {
-          continue;
-        }
         for ( unsigned int vector = 1; vector <= maxVector; vector++ ) {
           conf.setVector(vector);
           if ( inputSize % (conf.getNrThreadsD0() * conf.getNrItemsD0() * conf.getVector()) != 0 ) {
+            continue;
+          } else if ( conf.getNrItemsPerBlock() > (inputSize / conf.getVector()) ) {
+            break;
+          } else if ( (inputSize / conf.getVector()) % conf.getNrItemsPerBlock() != 0 ) {
             continue;
           }
 
