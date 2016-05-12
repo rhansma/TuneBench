@@ -141,10 +141,10 @@ int main(int argc, char * argv[]) {
             clQueues->at(clDeviceID)[0].enqueueReadBuffer(output_d, CL_TRUE, 0, output.size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
             clEvent.wait();
           } catch ( cl::Error & err ) {
-            std::cerr << "OpenCL kernel execution error (";
+            std::cerr << "OpenCL kernel execution error (" << inputSize << ", " << outputSize << ") (";
             std::cerr << conf.print();
             std::cerr << "), (";
-            std::cerr << isa::utils::toString(conf.getNrThreadsD0() * (inputSize / conf.getNrItemsPerBlock())) << "): ";
+            std::cerr << isa::utils::toString(conf.getNrThreadsD0() * (inputSize / conf.getNrItemsPerBlock() / conf.getVector())) << "): ";
             std::cerr << isa::utils::toString(err.err()) << std::endl;
             delete kernel;
             if ( err.err() == -4 || err.err() == -61 ) {
