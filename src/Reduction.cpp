@@ -16,7 +16,7 @@
 
 namespace TuneBench {
 
-ReductionConf::ReductionConf() : isa::OpenCL::KernelConf(), nrItemsPerBlock(1) {}
+ReductionConf::ReductionConf() : isa::OpenCL::KernelConf(), nrItemsPerBlock(1), vector(1) {}
 
 std::string ReductionConf::print() const {
   return isa::utils::toString(nrItemsPerBlock) + " " + isa::utils::toString(vector) + " " + isa::OpenCL::KernelConf::print();
