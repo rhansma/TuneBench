@@ -33,12 +33,12 @@ std::string * getReductionOpenCL(const ReductionConf & conf, const std::string &
   }
   // Begin kernel's template
   *code = "__kernel void reduction(__global const " + vectorDataName + " * const restrict input, __global " + outputDataName + " * const restrict output) {\n"
-    "const unsigned int firstItem = (get_group_id(0) * " + isa::utils::toString(conf.getNrItemsPerBlock()) + ") + get_local_id(0);\n"
+    "const unsigned int firstItem = (get_group_id(0) * " + isa::utils::toString(conf.getNrItemsPerBlock() / conf.getVector()) + ") + get_local_id(0);\n"
     "__local " + outputDataName + " buffer[" + isa::utils::toString(conf.getNrThreadsD0()) + "];\n"
     "<%DEF%>"
     "\n"
     "// First compute phase\n"
-    "for ( unsigned int item = firstItem; item < (firstItem + " + isa::utils::toString(conf.getNrItemsPerBlock()) + "); item += " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
+    "for ( unsigned int item = firstItem; item < (firstItem + " + isa::utils::toString(conf.getNrItemsPerBlock() / conf.getVector()) + "); item += " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
     "<%COMPUTE%>"
     "}\n"
     "// In-thread reduce phase\n"
