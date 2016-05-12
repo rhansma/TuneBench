@@ -53,7 +53,7 @@ elif COMMAND == "create":
             METRICS = "GBs FLOAT UNSIGNED NOT NULL,"
         elif sys.argv[3].lower() == "reduction":
             SCENARIO = "inputSize INTEGER NOT NULL, outputSize INTEGER NOT NULL,"
-            EXTRA = "nrItemsPerBlock INTEGER NOT NULL,"
+            EXTRA = "nrItemsPerBlock INTEGER NOT NULL, vector INTEGER NOT NULL,"
             METRICS = "GBs FLOAT UNSIGNED NOT NULL,"
         elif sys.argv[3].lower() == "stencil":
             SCENARIO = "matrixWidth INTEGER NOT NULL,"

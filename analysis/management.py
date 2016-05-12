@@ -49,7 +49,7 @@ def load_file(db_queue, table, input_file, benchmark):
             if benchmark.lower() == "triad":
                 db_queue.execute("INSERT INTO " + table + " VALUES(NULL, " + tokens[0] + ", " + tokens[1] + ", " + tokens[2] + ", " + tokens[3] + ", " + tokens[4] + ", " + tokens[5]+ ", " + tokens[6] + ", " + tokens[7] + ", " + tokens[8] + ", " + tokens[9] + ", " + tokens[10] + ", " + tokens[11].rstrip("\n") + ")")
             elif benchmark.lower() == "reduction":
-                db_queue.execute("INSERT INTO " + table + " VALUES(NULL, " + tokens[0] + ", " + tokens[1] + ", " + tokens[2] + ", " + tokens[3] + ", " + tokens[4] + ", " + tokens[5]+ ", " + tokens[6] + ", " + tokens[7] + ", " + tokens[8] + ", " + tokens[9] + ", " + tokens[10] + ", " + tokens[11] + ", " + tokens[12].rstrip("\n") + ")")
+                db_queue.execute("INSERT INTO " + table + " VALUES(NULL, " + tokens[0] + ", " + tokens[1] + ", " + tokens[2] + ", " + tokens[3] + ", " + tokens[4] + ", " + tokens[5]+ ", " + tokens[6] + ", " + tokens[7] + ", " + tokens[8] + ", " + tokens[9] + ", " + tokens[10] + ", " + tokens[11] + ", " + tokens[12] + ", " + tokens[13].rstrip("\n") + ")")
             elif benchmark.lower() == "stencil":
                 db_queue.execute("INSERT INTO " + table + " VALUES(NULL, " + tokens[0] + ", " + tokens[1] + ", " + tokens[2] + ", " + tokens[3] + ", " + tokens[4] + ", " + tokens[5]+ ", " + tokens[6] + ", " + tokens[7] + ", " + tokens[8] + ", " + tokens[9] + ", " + tokens[10] + ", " + tokens[11].rstrip("\n") + ")")
             elif benchmark.lower() == "md":

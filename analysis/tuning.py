@@ -22,7 +22,7 @@ def tune(db_queue, table, benchmark, scenario):
         extra = "vector,"
         metrics = "GBs,"
     elif benchmark.lower() == "reduction":
-        extra = "nrItemsPerBlock,"
+        extra = "nrItemsPerBlock,vector,"
         metrics = "GBs,"
     elif benchmark.lower() == "stencil":
         extra = "localMemory,"
