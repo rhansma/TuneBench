@@ -157,7 +157,7 @@ int main(int argc, char * argv[]) {
           bool error = false;
           for ( auto item = output.begin(); item != output.end(); ++item ) {
             if ( !isa::utils::same(*item, (magicValue * (inputSize / outputSize))) ) {
-              std::cerr << "Output error (" << conf.print() << ")." << std::endl;
+              std::cerr << "Output error (" << inputSize << ", " << outputSize << ") (" << conf.print() << ")." << std::endl;
               error = true;
               break;
             }
