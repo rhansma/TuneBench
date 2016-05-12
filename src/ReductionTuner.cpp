@@ -95,7 +95,7 @@ int main(int argc, char * argv[]) {
           }
 
           // Generate kernel
-          unsigned int outputSize = inputSize / conf.getNrItemsPerBlock() /conf.getVector();
+          unsigned int outputSize = inputSize / conf.getNrItemsPerBlock() / conf.getVector();
           double gbytes = isa::utils::giga((static_cast< uint64_t >(inputSize) * sizeof(inputDataType)) + (static_cast< uint64_t >(outputSize) * sizeof(outputDataType)));
           std::vector< outputDataType > output(outputSize);
           cl::Event clEvent;
