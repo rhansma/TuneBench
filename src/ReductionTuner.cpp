@@ -90,6 +90,8 @@ int main(int argc, char * argv[]) {
             break;
           } else if ( (inputSize / conf.getVector()) % conf.getNrItemsPerBlock() != 0 ) {
             continue;
+          } else if ( 1 + (conf.getNrItemsD0() * conf.getVector()) > maxItems ) {
+            break;
           }
 
           // Generate kernel
