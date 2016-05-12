@@ -29,8 +29,9 @@ int main(int argc, char * argv[]) {
     conf.setNrThreadsD0(args.getSwitchArgument< unsigned int >("-threads_d0"));
     conf.setNrItemsD0(args.getSwitchArgument< unsigned int >("-items_d0"));
     conf.setNrItemsPerBlock(args.getSwitchArgument< unsigned int >("-items_per_block"));
+    conf.setVector(args.getSwitchArgument< unsigned int >("-vector"));
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -threads_d0 ... -items_d0 ... -items_per_block ..." << std::endl;
+    std::cerr << argv[0] << " -threads_d0 ... -items_d0 ... -items_per_block ... -vector ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;

@@ -28,12 +28,15 @@ public:
   ReductionConf();
   // Get
   inline unsigned int getNrItemsPerBlock() const;
+  inline unsigned int getVector() const;
   // Set
   inline void setNrItemsPerBlock(unsigned int items);
+  inline void setVector(unsigned int vector);
   // utils
   std::string print() const;
 private:
   unsigned int nrItemsPerBlock;
+  unsigned int vector;
 };
 
 std::string * getReductionOpenCL(const ReductionConf & conf, const std::string & inputDataName, const std::string & outputDataName);
@@ -44,8 +47,16 @@ inline unsigned int ReductionConf::getNrItemsPerBlock() const {
   return nrItemsPerBlock;
 }
 
+inline unsigned int ReductionConf::getVector() const {
+  return vector;
+}
+
 inline void ReductionConf::setNrItemsPerBlock(unsigned int items) {
   nrItemsPerBlock = items;
+}
+
+inline void ReductionConf::setVector(unsigned int vector) {
+  this->vector = vector;
 }
 
 } // TuneBench
