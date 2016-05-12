@@ -74,7 +74,7 @@ int main(int argc, char * argv[]) {
   std::fill(input.begin(), input.end(), magicValue);
 
   std::cout << std::fixed << std::endl;
-  std::cout << "# inputSize outputSize nrItemsPerBlock nrThreadsD0 nrItemsD0 GB/s time stdDeviation COV" << std::endl << std::endl;
+  std::cout << "# inputSize outputSize *configuratio* GB/s time stdDeviation COV" << std::endl << std::endl;
 
   for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
     conf.setNrThreadsD0(threads);
@@ -93,7 +93,7 @@ int main(int argc, char * argv[]) {
           }
 
           // Generate kernel
-          unsigned int outputSize = inputSize / conf.getNrItemsPerBlock();
+          unsigned int outputSize = inputSize / conf.getNrItemsPerBlock() /conf.getVector();
           double gbytes = isa::utils::giga((static_cast< uint64_t >(inputSize) * sizeof(inputDataType)) + (static_cast< uint64_t >(outputSize) * sizeof(outputDataType)));
           std::vector< outputDataType > output(outputSize);
           cl::Event clEvent;
