@@ -74,7 +74,7 @@ int main(int argc, char * argv[]) {
   std::fill(input.begin(), input.end(), magicValue);
 
   std::cout << std::fixed << std::endl;
-  std::cout << "# inputSize outputSize *configuratio* GB/s time stdDeviation COV" << std::endl << std::endl;
+  std::cout << "# inputSize outputSize *configuration* GB/s time stdDeviation COV" << std::endl << std::endl;
 
   for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
     conf.setNrThreadsD0(threads);
@@ -90,7 +90,7 @@ int main(int argc, char * argv[]) {
             break;
           } else if ( (inputSize / conf.getVector()) % conf.getNrItemsPerBlock() != 0 ) {
             continue;
-          } else if ( 1 + (conf.getNrItemsD0() * conf.getVector()) > maxItems ) {
+          } else if ( 2 + (conf.getNrItemsD0() * conf.getVector()) > maxItems ) {
             break;
           }
 
