@@ -80,7 +80,7 @@ int main(int argc, char * argv[]) {
     conf.setNrThreadsD0(threads);
     for ( unsigned int items = 1; items <= maxItems; items++ ) {
       conf.setNrItemsD0(items);
-      for ( unsigned int itemsPerBlock = 1; itemsPerBlock < inputSize; itemsPerBlock++ ) {
+      for ( unsigned int itemsPerBlock = 1; itemsPerBlock <= inputSize / (conf.getNrThreadsD0() * conf.getNrItemsD0()); itemsPerBlock++ ) {
         conf.setNrItemsPerBlock(itemsPerBlock * (conf.getNrThreadsD0() * conf.getNrItemsD0()));
         for ( unsigned int vector = 1; vector <= maxVector; vector++ ) {
           conf.setVector(vector);
