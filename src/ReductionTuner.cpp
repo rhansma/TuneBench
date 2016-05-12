@@ -154,7 +154,7 @@ int main(int argc, char * argv[]) {
 
           bool error = false;
           for ( auto item = output.begin(); item != output.end(); ++item ) {
-            if ( !isa::utils::same(*item, (magicValue * conf.getNrItemsPerBlock())) ) {
+            if ( !isa::utils::same(*item, (magicValue * (conf.getNrItemsPerBlock() / conf.getVector()))) ) {
               std::cerr << "Output error (" << conf.print() << ")." << std::endl;
               error = true;
               break;
