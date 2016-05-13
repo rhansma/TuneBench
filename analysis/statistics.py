@@ -31,6 +31,8 @@ def get_quartiles(db_queue, table, benchmark, scenario):
     db_queue.execute("SELECT COUNT(id) FROM " + table + " WHERE " + scenario)
     items = db_queue.fetchall()
     nr_items = items[0][0]
+    if int(nr_items) == 0:
+        return [-1]
     db_queue.execute("SELECT MIN(" + metrics + ") FROM " + table + " WHERE " + scenario)
     items = db_queue.fetchall()
     results.append(int(items[0][0]))
