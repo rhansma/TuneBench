@@ -38,6 +38,7 @@ int main(int argc, char * argv[]) {
   unsigned int clPlatformID = 0;
   unsigned int clDeviceID = 0;
   unsigned int vectorSize = 0;
+  unsigned int minThreads = 0;
   unsigned int maxThreads = 0;
   unsigned int maxItems = 0;
   unsigned int matrixWidth = 0;
@@ -52,12 +53,13 @@ int main(int argc, char * argv[]) {
     nrIterations = args.getSwitchArgument< unsigned int >("-iterations");
     vectorSize = args.getSwitchArgument< unsigned int >("-vector");
     padding = args.getSwitchArgument< unsigned int >("-padding");
+    minThreads = args.getSwitchArgument< unsigned int >("-min_threads");
     maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
     maxItems = args.getSwitchArgument< unsigned int >("-max_items");
     matrixWidth = args.getSwitchArgument< unsigned int >("-matrix_width");
     conf.setLocalMemory(args.getSwitch("-local"));
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -padding ... -max_threads ... -max_items ... -matrix_width ... [-local]" << std::endl;
+    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -padding ... -min_threads ... -max_threads ... -max_items ... -matrix_width ... [-local]" << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
@@ -89,12 +91,15 @@ int main(int argc, char * argv[]) {
   TuneBench::stencil2D(input, output_c, matrixWidth, padding);
 
   std::cout << std::fixed << std::endl;
-  std::cout << "# matrixWidth localMemory nrThreadsD0 nrThreadsD1 nrItemsD0 nrItemsD1 GFLOP/s time stdDeviation COV" << std::endl << std::endl;
+  std::cout << "# matrixWidth *configuration* GFLOP/s time stdDeviation COV" << std::endl << std::endl;
 
-  for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
+  for ( unsigned int threads = minThreads; threads <= maxThreads; threads += minThreads ) {
     conf.setNrThreadsD0(threads);
     for ( unsigned int threads = 1; conf.getNrThreadsD0() * threads <= maxThreads; threads++ ) {
       conf.setNrThreadsD1(threads);
+      if ( (conf.getNrThreadsD0() * conf.getNrThreadsD1()) % vectorSize != 0 ) {
+        continue;
+      }
       for ( unsigned int items = 1; items <= maxItems; items++ ) {
         conf.setNrItemsD0(items);
         if ( matrixWidth % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
@@ -107,6 +112,7 @@ int main(int argc, char * argv[]) {
           }
 
           // Generate kernel
+          // 11 is the minimum number of required operations, thus we use this
           double gflops = isa::utils::giga(static_cast< uint64_t >(matrixWidth) * matrixWidth * 11);
           cl::Event clEvent;
           cl::Kernel * kernel;
