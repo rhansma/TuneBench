@@ -29,8 +29,8 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
 
   // Begin kernel's template
   *code = "__kernel void stencil2D(__global const " + dataName + " * const restrict input, __global " + dataName + " * const restrict output) {\n"
-    "unsigned int outputRow = (get_group_id(1) * " + isa::utils::toString(conf.getNrThreadsD1() * conf.getNrItemsD1()) + ") + get_local_id(1);\n"
-    "unsigned int outputColumn = (get_group_id(0) * " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0);\n"
+    "unsigned int outputRow = (get_group_id(1) * " + isa::utils::toString(conf.getNrThreadsD1() * conf.getNrItemsD1()) + ");\n"
+    "unsigned int outputColumn = (get_group_id(0) * " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ");\n"
     "<%DEF%>";
   if ( conf.getLocalMemory() ) {
     *code += "__local " + dataName + " buffer[" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 2) * ((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2)) + "];\n"
@@ -66,7 +66,7 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
       "accumulator<%NUMD0%>x<%NUMD1%> += (0.15f * input[((outputRow + 2 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + 1 + <%OFFSETD0%>)]);\n"
       "accumulator<%NUMD0%>x<%NUMD1%> += (0.05f * input[((outputRow + 2 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + 2 + <%OFFSETD0%>)]);\n";
   }
-  std::string store_sTemplate = "output[((outputRow + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width, padding)) + ") + (outputColumn + <%OFFSETD0%>)] = accumulator<%NUMD0%>x<%NUMD1%>;\n";
+  std::string store_sTemplate = "output[((outputRow + get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width, padding)) + ") + (outputColumn + get_local_id(0) + <%OFFSETD0%>)] = accumulator<%NUMD0%>x<%NUMD1%>;\n";
   // End kernel's template
 
   std::string empty_s("");
