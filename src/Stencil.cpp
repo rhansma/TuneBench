@@ -30,23 +30,15 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
   // Begin kernel's template
   *code = "__kernel void stencil2D(__global const " + dataName + " * const restrict input, __global " + dataName + " * const restrict output) {\n"
     "unsigned int outputRow = (get_group_id(1) * " + isa::utils::toString(conf.getNrThreadsD1() * conf.getNrItemsD1()) + ") + get_local_id(1);\n"
-    "unsigned int outputColumn = (get_group_id(0) * " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0);\n";
+    "unsigned int outputColumn = (get_group_id(0) * " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0);\n"
+    "<%DEF%>";
   if ( conf.getLocalMemory() ) {
-    *code += "__local " + dataName + " buffer[" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 2) * ((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2)) + "];\n";
-  }
-  *code += "<%DEF%>";
-  if ( conf.getLocalMemory() ) {
-    *code += "// Load tile in local memory\n"
-      "<%LOADMAIN%>"
-      "if ( get_local_id(1) == 0 ) {\n"
-      "<%LOADROWS%>"
+    *code += "__local " + dataName + " buffer[" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 2) * ((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2)) + "];\n"
+      "\n"
+      "for ( unsigned int localRow = get_local_id(1); localRow < " + std::to_string((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 2) + "; localRow += " + std::to_string(conf.getNrThreadsD1()) + " ) {\n"
+      "for ( unsigned int localColumn = get_local_id(0); localColumn < " + std::to_string((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + "; localColumn += " + std::to_string(conf.getNrThreadsD0()) + " ) {\n"
+      "buffer[(localRow * " + std::to_string((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + localColumn] = input[((outputRow + localRow) * " + std::to_string(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + localColumn)];\n"
       "}\n"
-      "if ( get_local_id(0) < 2 ) {\n"
-      "<%LOADCOLUMNS%>"
-      "}\n"
-      "if ( get_local_id(0) < 2 && get_local_id(1) == 0 ) {\n"
-      "buffer[(" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1())) * ((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2)) + ") + (get_local_id(0) + " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ")] = input[ ((outputRow + " + isa::utils::toString(conf.getNrThreadsD1() * conf.getNrItemsD1()) + ") * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ")+ (outputColumn + " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ")];\n"
-      "buffer[(" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 1) * ((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2)) + ") + (get_local_id(0) + " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ")] = input[ ((outputRow + " + isa::utils::toString((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 1) + ") * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ")+ (outputColumn + " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ")];\n"
       "}\n"
       "barrier(CLK_LOCAL_MEM_FENCE);\n";
   }
