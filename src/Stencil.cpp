@@ -200,7 +200,7 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
       }
     }
     for ( auto itemD1 = computeStrings.begin(); itemD1 != computeStrings.end(); ++itemD1 ) {
-      for ( auto itemD0 = *itemD1.begin(); itemD0 != *itemD1.end(); ++itemD0 ) {
+      for ( auto itemD0 = (*itemD1).begin(); itemD0 != (*itemD1).end(); ++itemD0 ) {
         compute_s->append(*itemD0);
       }
     }
