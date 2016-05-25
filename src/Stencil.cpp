@@ -194,7 +194,7 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
           } else {
             temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetd1_s, true);
           }
-          computeStrings.at((d1 * conf.getNrThreadsD1()) + (computeStatement % 3)).at(d0).append(*temp);
+          computeStrings.at((d1 * conf.getNrThreadsD1()) + (computeStatement / 3)).at(d0).append(*temp);
           delete temp;
         }
       }
