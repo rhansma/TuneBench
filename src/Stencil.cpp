@@ -126,12 +126,13 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
   }
 
   if ( conf.getLocalMemory() ) {
-    for ( unsigned int d0 = 0; d0 < conf.getNrItemsD0(); d0++ ) {
-      std::string d0_s = isa::utils::toString(d0);
-      std::string offsetd0_s = isa::utils::toString(d0 * conf.getNrThreadsD0());
-      std::string * temp = 0;
+    for ( unsigned int computeStatement = 0; computeStatement < 9; computeStatement++ ) {
+    std::string * temp = 0;
 
-      for ( unsigned int computeStatement = 0; computeStatement < 9; computeStatement++ ) {
+      for ( unsigned int d0 = 0; d0 < conf.getNrItemsD0(); d0++ ) {
+        std::string d0_s = isa::utils::toString(d0);
+        std::string offsetd0_s = isa::utils::toString(d0 * conf.getNrThreadsD0());
+
         for ( unsigned int d1 = 0; d1 < conf.getNrItemsD1(); d1++ ) {
           std::string d1_s = isa::utils::toString(d1);
           std::string offsetd1_s = isa::utils::toString(d1 * conf.getNrThreadsD1());
@@ -145,12 +146,12 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
           compute_s->append(*temp);
           delete temp;
         }
-      }
-      compute_s = isa::utils::replace(compute_s, "<%NUMD0%>", d0_s, true);
-      if ( d0 == 0 ) {
-        compute_s = isa::utils::replace(compute_s, " + <%OFFSETD0%>", empty_s, true);
-      } else {
-        compute_s = isa::utils::replace(compute_s, "<%OFFSETD0%>", offsetd0_s, true);
+        compute_s = isa::utils::replace(compute_s, "<%NUMD0%>", d0_s, true);
+        if ( d0 == 0 ) {
+          compute_s = isa::utils::replace(compute_s, " + <%OFFSETD0%>", empty_s, true);
+        } else {
+          compute_s = isa::utils::replace(compute_s, "<%OFFSETD0%>", offsetd0_s, true);
+        }
       }
     }
   } else {
