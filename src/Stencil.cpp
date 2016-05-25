@@ -48,10 +48,6 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
     "<%STORE%>"
     "}\n";
   std::string def_sTemplate = dataName + " accumulator<%NUMD0%>x<%NUMD1%> = 0;\n";
-  std::string loadMain_sTemplate = "buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + <%OFFSETD0%>)] = input[((outputRow + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + <%OFFSETD0%>)];\n";
-  std::string loadRows_sTemplate = "buffer[(" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1())) * ((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2)) + ") + (get_local_id(0) + <%OFFSETD0%>)] = input[((outputRow + " + isa::utils::toString(conf.getNrThreadsD1() * conf.getNrItemsD1()) + ") * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + <%OFFSETD0%>)];\n"
-    "buffer[(" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 1) * ((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2)) + ") + (get_local_id(0) + <%OFFSETD0%>)] = input[((outputRow + " + isa::utils::toString((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 1) + ") * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + <%OFFSETD0%>)];\n";
-  std::string loadColumns_sTemplate = "buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ")] = input[((outputRow + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ")];\n";
   std::vector< std::string > compute_sTemplate(9);
   if ( conf.getLocalMemory() ) {
     compute_sTemplate[0] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + <%OFFSETD0%>)];\n";
@@ -79,20 +75,17 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
 
   std::string empty_s("");
   std::string * def_s = new std::string();
-  std::string * loadMain_s = new std::string();
-  std::string * loadRows_s = new std::string();
-  std::string * loadColumns_s = new std::string();
   std::string * compute_s = new std::string();
   std::string * store_s = new std::string();
 
   for ( unsigned int d1 = 0; d1 < conf.getNrItemsD1(); d1++ ) {
     std::string d1_s = isa::utils::toString(d1);
     std::string offsetd1_s = isa::utils::toString(d1 * conf.getNrThreadsD1());
-    std::string * temp = 0;
 
     for ( unsigned int d0 = 0; d0 < conf.getNrItemsD0(); d0++ ) {
       std::string d0_s = isa::utils::toString(d0);
       std::string offsetd0_s = isa::utils::toString(d0 * conf.getNrThreadsD0());
+      std::string * temp = 0;
 
       temp = isa::utils::replace(&def_sTemplate, "<%NUMD0%>", d0_s);
       if ( d0 == 0 ) {
@@ -101,14 +94,6 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
         temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
       }
       def_s->append(*temp);
-      delete temp;
-      temp = isa::utils::replace(&loadMain_sTemplate, "<%NUMD0%>", d0_s);
-      if ( d0 == 0 ) {
-        temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
-      } else {
-        temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
-      }
-      loadMain_s->append(*temp);
       delete temp;
       temp = isa::utils::replace(&store_sTemplate, "<%NUMD0%>", d0_s);
       if ( d0 == 0 ) {
@@ -119,55 +104,6 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
       store_s->append(*temp);
       delete temp;
     }
-    if ( conf.getLocalMemory() ) {
-      for ( unsigned int computeStatement = 0; computeStatement < 9; computeStatement++ ) {
-        for ( unsigned int d0 = 0; d0 < conf.getNrItemsD0(); d0++ ) {
-          std::string d0_s = isa::utils::toString(d0);
-          std::string offsetd0_s = isa::utils::toString(d0 * conf.getNrThreadsD0());
-
-          temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%NUMD0%>", d0_s);
-          if ( d0 == 0 ) {
-            temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
-          } else {
-            temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
-          }
-          compute_s->append(*temp);
-          delete temp;
-        }
-      }
-    } else {
-      for ( unsigned int computeStatement = 0; computeStatement < 9; computeStatement += 3 ) {
-        for ( unsigned int d0 = 0; d0 < conf.getNrItemsD0(); d0++ ) {
-          std::string d0_s = isa::utils::toString(d0);
-          std::string offsetd0_s = isa::utils::toString(d0 * conf.getNrThreadsD0());
-
-          temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%NUMD0%>", d0_s);
-          if ( d0 == 0 ) {
-            temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
-          } else {
-            temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
-          }
-          compute_s->append(*temp);
-          delete temp;
-          temp = isa::utils::replace(&compute_sTemplate[computeStatement + 1], "<%NUMD0%>", d0_s);
-          if ( d0 == 0 ) {
-            temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
-          } else {
-            temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
-          }
-          compute_s->append(*temp);
-          delete temp;
-          temp = isa::utils::replace(&compute_sTemplate[computeStatement + 2], "<%NUMD0%>", d0_s);
-          if ( d0 == 0 ) {
-            temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
-          } else {
-            temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
-          }
-          compute_s->append(*temp);
-          delete temp;
-        }
-      }
-    }
 
     def_s = isa::utils::replace(def_s, "<%NUMD1%>", d1_s, true);
     if ( d1 == 0 ) {
@@ -175,20 +111,6 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
     } else {
       def_s = isa::utils::replace(def_s, "<%OFFSETD1%>", offsetd1_s, true);
     }
-    loadMain_s = isa::utils::replace(loadMain_s, "<%NUMD1%>", d1_s, true);
-    if ( d1 == 0 ) {
-      loadMain_s = isa::utils::replace(loadMain_s, " + <%OFFSETD1%>", empty_s, true);
-    } else {
-      loadMain_s = isa::utils::replace(loadMain_s, "<%OFFSETD1%>", offsetd1_s, true);
-    }
-    temp = isa::utils::replace(&loadColumns_sTemplate, "<%NUMD1%>", d1_s);
-    if ( d1 == 0 ) {
-      temp = isa::utils::replace(temp, " + <%OFFSETD1%>", empty_s, true);
-    } else {
-      temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetd1_s, true);
-    }
-    loadColumns_s->append(*temp);
-    delete temp;
     compute_s = isa::utils::replace(compute_s, "<%NUMD1%>", d1_s, true);
     if ( d1 == 0 ) {
       compute_s = isa::utils::replace(compute_s, " + <%OFFSETD1%>", empty_s, true);
@@ -208,26 +130,68 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
     std::string offsetd0_s = isa::utils::toString(d0 * conf.getNrThreadsD0());
     std::string * temp = 0;
 
-    temp = isa::utils::replace(&loadRows_sTemplate, "<%NUMD0%>", d0_s);
-    if ( d0 == 0 ) {
-      temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
+    if ( conf.getLocalMemory() ) {
+      for ( unsigned int computeStatement = 0; computeStatement < 9; computeStatement++ ) {
+        for ( unsigned int d1 = 0; d1 < conf.getNrItemsD1(); d1++ ) {
+          std::string d1_s = isa::utils::toString(d1);
+          std::string offsetd1_s = isa::utils::toString(d1 * conf.getNrThreadsD1());
+
+          temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%NUMD1%>", d1_s);
+          if ( d1 == 0 ) {
+            temp = isa::utils::replace(temp, " + <%OFFSETD1%>", empty_s, true);
+          } else {
+            temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetd1_s, true);
+          }
+          compute_s->append(*temp);
+          delete temp;
+        }
+      }
     } else {
-      temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
+      for ( unsigned int computeStatement = 0; computeStatement < 9; computeStatement += 3 ) {
+        for ( unsigned int d1 = 0; d1 < conf.getNrItemsD1(); d1++ ) {
+          std::string d1_s = isa::utils::toString(d1);
+          std::string offsetd1_s = isa::utils::toString(d1 * conf.getNrThreadsD1());
+
+          temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%NUMD1%>", d1_s);
+          if ( d1 == 0 ) {
+            temp = isa::utils::replace(temp, " + <%OFFSETD1%>", empty_s, true);
+          } else {
+            temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetd1_s, true);
+          }
+          compute_s->append(*temp);
+          delete temp;
+          temp = isa::utils::replace(&compute_sTemplate[computeStatement + 1], "<%NUMD1%>", d1_s);
+          if ( d1 == 0 ) {
+            temp = isa::utils::replace(temp, " + <%OFFSETD1%>", empty_s, true);
+          } else {
+            temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetd1_s, true);
+          }
+          compute_s->append(*temp);
+          delete temp;
+          temp = isa::utils::replace(&compute_sTemplate[computeStatement + 2], "<%NUMD1%>", d1_s);
+          if ( d1 == 0 ) {
+            temp = isa::utils::replace(temp, " + <%OFFSETD1%>", empty_s, true);
+          } else {
+            temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetd1_s, true);
+          }
+          compute_s->append(*temp);
+          delete temp;
+        }
+      }
     }
-    loadRows_s->append(*temp);
-    delete temp;
+
+    compute_s = isa::utils::replace(compute_s, "<%NUMD0%>", d0_s, true);
+    if ( d0 == 0 ) {
+      compute_s = isa::utils::replace(compute_s, " + <%OFFSETD0%>", empty_s, true);
+    } else {
+      compute_s = isa::utils::replace(compute_s, "<%OFFSETD0%>", offsetd0_s, true);
+    }
   }
 
   code = isa::utils::replace(code, "<%DEF%>", *def_s, true);
-  code = isa::utils::replace(code, "<%LOADMAIN%>", *loadMain_s, true);
-  code = isa::utils::replace(code, "<%LOADROWS%>", *loadRows_s, true);
-  code = isa::utils::replace(code, "<%LOADCOLUMNS%>", *loadColumns_s, true);
   code = isa::utils::replace(code, "<%COMPUTE%>", *compute_s, true);
   code = isa::utils::replace(code, "<%STORE%>", *store_s, true);
   delete def_s;
-  delete loadMain_s;
-  delete loadRows_s;
-  delete loadColumns_s;
   delete compute_s;
   delete store_s;
 
