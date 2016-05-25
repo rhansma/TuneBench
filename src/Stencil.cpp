@@ -52,27 +52,27 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
   std::string loadRows_sTemplate = "buffer[(" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1())) * ((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2)) + ") + (get_local_id(0) + <%OFFSETD0%>)] = input[((outputRow + " + isa::utils::toString(conf.getNrThreadsD1() * conf.getNrItemsD1()) + ") * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + <%OFFSETD0%>)];\n"
     "buffer[(" + isa::utils::toString(((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 1) * ((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2)) + ") + (get_local_id(0) + <%OFFSETD0%>)] = input[((outputRow + " + isa::utils::toString((conf.getNrThreadsD1() * conf.getNrItemsD1()) + 1) + ") * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + <%OFFSETD0%>)];\n";
   std::string loadColumns_sTemplate = "buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ")] = input[((outputRow + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + " + isa::utils::toString(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ")];\n";
-  std::string compute_sTemplate;
+  std::vector< std::string > compute_sTemplate(9);
   if ( conf.getLocalMemory() ) {
-    compute_sTemplate = "accumulator<%NUMD0%>x<%NUMD1%> = 0.05f * buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 1 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 2 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * buffer[((get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.25f * buffer[((get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 1 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * buffer[((get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 2 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * buffer[((get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * buffer[((get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 1 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * buffer[((get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 2 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[0] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + <%OFFSETD0%>)];\n";
+    compute_sTemplate[1] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 1 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[2] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * buffer[((get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 2 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[3] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * buffer[((get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + <%OFFSETD0%>)];\n";
+    compute_sTemplate[4] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.25f * buffer[((get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 1 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[5] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * buffer[((get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 2 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[6] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * buffer[((get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + <%OFFSETD0%>)];\n";
+    compute_sTemplate[7] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * buffer[((get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 1 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[8] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * buffer[((get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString((conf.getNrThreadsD0() * conf.getNrItemsD0()) + 2) + ") + (get_local_id(0) + 2 + <%OFFSETD0%>)];\n";
   } else {
-    compute_sTemplate = "accumulator<%NUMD0%>x<%NUMD1%> = 0.05f * input[((outputRow + get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * input[((outputRow + get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 1 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * input[((outputRow + get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 2 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * input[((outputRow + get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.25f * input[((outputRow + get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 1 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * input[((outputRow + get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 2 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * input[((outputRow + get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * input[((outputRow + get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 1 + <%OFFSETD0%>)];\n"
-      "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * input[((outputRow + get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 2 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[0] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * input[((outputRow + get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + <%OFFSETD0%>)];\n";
+    compute_sTemplate[1] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * input[((outputRow + get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 1 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[2] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * input[((outputRow + get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 2 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[3] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * input[((outputRow + get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + <%OFFSETD0%>)];\n";
+    compute_sTemplate[4] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.25f * input[((outputRow + get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 1 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[5] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * input[((outputRow + get_local_id(1) + 1 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 2 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[6] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * input[((outputRow + get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + <%OFFSETD0%>)];\n";
+    compute_sTemplate[7] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.15f * input[((outputRow + get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 1 + <%OFFSETD0%>)];\n";
+    compute_sTemplate[8] = "accumulator<%NUMD0%>x<%NUMD1%> += 0.05f * input[((outputRow + get_local_id(1) + 2 + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width + 2, padding)) + ") + (outputColumn + get_local_id(0) + 2 + <%OFFSETD0%>)];\n";
   }
   std::string store_sTemplate = "output[((outputRow + get_local_id(1) + <%OFFSETD1%>) * " + isa::utils::toString(isa::utils::pad(width, padding)) + ") + (outputColumn + get_local_id(0) + <%OFFSETD0%>)] = accumulator<%NUMD0%>x<%NUMD1%>;\n";
   // End kernel's template
@@ -110,14 +110,6 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
       }
       loadMain_s->append(*temp);
       delete temp;
-      temp = isa::utils::replace(&compute_sTemplate, "<%NUMD0%>", d0_s);
-      if ( d0 == 0 ) {
-        temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
-      } else {
-        temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
-      }
-      compute_s->append(*temp);
-      delete temp;
       temp = isa::utils::replace(&store_sTemplate, "<%NUMD0%>", d0_s);
       if ( d0 == 0 ) {
         temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
@@ -126,6 +118,21 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
       }
       store_s->append(*temp);
       delete temp;
+    }
+    for ( unsigned int computeStatement = 0; computeStatement < 9; computeStatement++ ) {
+      for ( unsigned int d0 = 0; d0 < conf.getNrItemsD0(); d0++ ) {
+        std::string d0_s = isa::utils::toString(d0);
+        std::string offsetd0_s = isa::utils::toString(d0 * conf.getNrThreadsD0());
+
+        temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%NUMD0%>", d0_s);
+        if ( d0 == 0 ) {
+          temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
+        } else {
+          temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
+        }
+        compute_s->append(*temp);
+        delete temp;
+      }
     }
 
     def_s = isa::utils::replace(def_s, "<%NUMD1%>", d1_s, true);
