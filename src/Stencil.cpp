@@ -154,9 +154,9 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
       }
     }
   } else {
-    std::vector< std::vector< std::string > > computeStrings(2 + (conf.getNrThreadsD1() 8 (conf.getNrItemsD1() - 1)));
+    std::vector< std::vector< std::string > > computeStrings(2 + (conf.getNrThreadsD1() * (conf.getNrItemsD1() - 1)));
 
-    for ( unsigned int item = 0; item < 2 + (conf.getNrThreadsD1() 8 (conf.getNrItemsD1() - 1)); item++ ) {
+    for ( unsigned int item = 0; item < 2 + (conf.getNrThreadsD1() * (conf.getNrItemsD1() - 1)); item++ ) {
       computeStrings[item] = std::vector< std::string >(conf.getNrItemsD0());
     }
     for ( unsigned int computeStatement = 0; computeStatement < 9; computeStatement += 3 ) {
