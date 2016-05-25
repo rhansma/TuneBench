@@ -154,8 +154,12 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
       }
     }
   } else {
+    std::vector< std::vector< std::string > > computeStrings(2 + (conf.getNrThreadsD1() 8 (conf.getNrItemsD1() - 1)));
+
+    for ( unsigned int item = 0; item < 2 + (conf.getNrThreadsD1() 8 (conf.getNrItemsD1() - 1)); item++ ) {
+      computeStrings[item] = std::vector< std::string >(conf.getNrItemsD0());
+    }
     for ( unsigned int computeStatement = 0; computeStatement < 9; computeStatement += 3 ) {
-      std::string * temp = 0;
 
       for ( unsigned int d1 = 0; d1 < conf.getNrItemsD1(); d1++ ) {
         std::string d1_s = isa::utils::toString(d1);
@@ -164,6 +168,7 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
         for ( unsigned int d0 = 0; d0 < conf.getNrItemsD0(); d0++ ) {
           std::string d0_s = isa::utils::toString(d0);
           std::string offsetd0_s = isa::utils::toString(d0 * conf.getNrThreadsD0());
+          std::string * temp = 0;
 
           temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%NUMD0%>", d0_s);
           if ( d0 == 0 ) {
@@ -171,31 +176,32 @@ std::string * getStencil2DOpenCL(const Stencil2DConf & conf, const std::string &
           } else {
             temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
           }
-          compute_s->append(*temp);
-          delete temp;
-          temp = isa::utils::replace(&compute_sTemplate[computeStatement + 1], "<%NUMD0%>", d0_s);
+          temp->append(*(isa::utils::replace(&compute_sTemplate[computeStatement + 1], "<%NUMD0%>", d0_s)));
           if ( d0 == 0 ) {
             temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
           } else {
             temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
           }
-          compute_s->append(*temp);
-          delete temp;
-          temp = isa::utils::replace(&compute_sTemplate[computeStatement + 2], "<%NUMD0%>", d0_s);
+          temp->append(*(isa::utils::replace(&compute_sTemplate[computeStatement + 2], "<%NUMD0%>", d0_s)));
           if ( d0 == 0 ) {
             temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
           } else {
             temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetd0_s, true);
           }
-          compute_s->append(*temp);
+          temp = isa::utils::replace(temp, "<%NUMD1%>", d1_s, true);
+          if ( d1 == 0 ) {
+            temp = isa::utils::replace(temp, " + <%OFFSETD1%>", empty_s, true);
+          } else {
+            temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetd1_s, true);
+          }
+          computeStrings.at((d1 * conf.getNrThreadsD1()) + (computeStatement % 3)).at(d0).append(*temp);
           delete temp;
         }
-        compute_s = isa::utils::replace(compute_s, "<%NUMD1%>", d1_s, true);
-        if ( d1 == 0 ) {
-          compute_s = isa::utils::replace(compute_s, " + <%OFFSETD1%>", empty_s, true);
-        } else {
-          compute_s = isa::utils::replace(compute_s, "<%OFFSETD1%>", offsetd1_s, true);
-        }
+      }
+    }
+    for ( auto itemD1 = computeStrings.begin(); itemD1 != computeStrings.end(); ++itemD1 ) {
+      for ( auto itemD0 = *itemD1.begin(); itemD0 != *itemD1.end(); ++itemD0 ) {
+        compute_s->append(*itemD0);
       }
     }
   }
