@@ -42,18 +42,15 @@ template< typename T > void MD(std::vector< T > & input, std::vector< T > & outp
       T neighborPosition[3];
       float distance;
       float force;
-      if ( neighbor == atom ) {
-        continue;
-      }
 
       neighborPosition[0] = input[(neighbor * 4)];
       neighborPosition[1] = input[(neighbor * 4) + 1];
       neighborPosition[2] = input[(neighbor * 4) + 2];
       distance = 1.0f / (((position[0] - neighborPosition[0]) * (position[0] - neighborPosition[0])) + ((position[1] - neighborPosition[1]) * (position[1] - neighborPosition[1])) + ((position[2] - neighborPosition[2]) * (position[2] - neighborPosition[2])));
       force = (distance * distance * distance * distance) * ((LJ1 * (distance * distance * distance)) - LJ2);
-      accumulator[0] = (position[0] - neighborPosition[0]) * force;
-      accumulator[1] = (position[1] - neighborPosition[1]) * force;
-      accumulator[2] = (position[2] - neighborPosition[2]) * force;
+      accumulator[0] += (position[0] - neighborPosition[0]) * force;
+      accumulator[1] += (position[1] - neighborPosition[1]) * force;
+      accumulator[2] += (position[2] - neighborPosition[2]) * force;
     }
     output[(atom * 4)] = accumulator[0];
     output[(atom * 4) + 1] = accumulator[1];
