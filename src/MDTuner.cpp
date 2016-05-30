@@ -86,7 +86,7 @@ int main(int argc, char * argv[]) {
   TuneBench::MD(input, output_c, nrAtoms, LJ1, LJ2);
 
   std::cout << std::fixed << std::endl;
-  std::cout << "# nrAtoms *configuratio* GFLOP/s time stdDeviation COV" << std::endl << std::endl;
+  std::cout << "# nrAtoms *configuration* GFLOP/s time stdDeviation COV" << std::endl << std::endl;
 
   for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
     conf.setNrThreadsD0(threads);
