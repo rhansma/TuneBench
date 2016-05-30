@@ -107,8 +107,7 @@ int main(int argc, char * argv[]) {
           }
 
           // Generate kernel
-          // 11 is the minimum number of required operations, thus we use this
-          double gflops = isa::utils::giga(static_cast< uint64_t >(matrixWidth) * matrixWidth * 11);
+          double gflops = isa::utils::giga(static_cast< uint64_t >(matrixWidth) * matrixWidth * 18);
           cl::Event clEvent;
           cl::Kernel * kernel;
           isa::utils::Timer timer;
