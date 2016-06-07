@@ -50,14 +50,15 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     "} else {\n"
     "sampleStation<%STATION_Y%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION_Y%> * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n"
     "}\n";
-  std::string compute_sTemplate = "accumulator<%BASELINE%>00.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.y));\n"
-    "accumulator<%BASELINE%>00.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.x);\n"
-    "accumulator<%BASELINE%>01.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.w));\n"
-    "accumulator<%BASELINE%>01.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.z);\n"
-    "accumulator<%BASELINE%>10.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.y));\n"
-    "accumulator<%BASELINE%>10.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.x);\n"
-    "accumulator<%BASELINE%>11.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.w));\n"
-    "accumulator<%BASELINE%>11.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.z);\n";
+  std::vector< std::string > compute_sTemplate(8);
+  compute_sTemplate[0] = "accumulator<%BASELINE%>00.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.y));\n";
+  compute_sTemplate[1] = "accumulator<%BASELINE%>00.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.x);\n";
+  compute_sTemplate[2] = "accumulator<%BASELINE%>01.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.w));\n";
+  compute_sTemplate[3] = "accumulator<%BASELINE%>01.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.z);\n";
+  compute_sTemplate[4] = "accumulator<%BASELINE%>10.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.y));\n";
+  compute_sTemplate[5] = "accumulator<%BASELINE%>10.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.x);\n";
+  compute_sTemplate[6] = "accumulator<%BASELINE%>11.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.w));\n";
+  compute_sTemplate[7] = "accumulator<%BASELINE%>11.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.z);\n";
   std::string reduceStore_sTemplate = "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
     "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>00.x;\n"
     "barrier(CLK_LOCAL_MEM_FENCE);\n"
@@ -211,16 +212,18 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
       loadCompute_s->append(*temp);
       delete temp;
     }
-    for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
-      std::string baseline_s = std::to_string(baseline);
-      std::string stationX_s = std::to_string(baseline * 2);
-      std::string stationY_s = std::to_string((baseline * 2) + 1);
+    for ( unsigned int computeStatement = 0; computeStatement < 8; computeStatement++ ) {
+      for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
+        std::string baseline_s = std::to_string(baseline);
+        std::string stationX_s = std::to_string(baseline * 2);
+        std::string stationY_s = std::to_string((baseline * 2) + 1);
 
-      temp = isa::utils::replace(&compute_sTemplate, "<%BASELINE%>", baseline_s);
-      temp = isa::utils::replace(temp, "<%STATION_X%>", stationX_s, true);
-      temp = isa::utils::replace(temp, "<%STATION_Y%>", stationY_s, true);
-      loadCompute_s->append(*temp);
-      delete temp;
+        temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%BASELINE%>", baseline_s);
+        temp = isa::utils::replace(temp, "<%STATION_X%>", stationX_s, true);
+        temp = isa::utils::replace(temp, "<%STATION_Y%>", stationY_s, true);
+        loadCompute_s->append(*temp);
+        delete temp;
+      }
     }
   }
 
