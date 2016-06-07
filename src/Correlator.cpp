@@ -273,7 +273,14 @@ std::string * getCorrelatorSequentialTimeOpenCL(const CorrelatorConf & conf, con
   compute_sTemplate[5] = "accumulator<%BASELINE%>10.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.x);\n";
   compute_sTemplate[6] = "accumulator<%BASELINE%>11.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.w));\n";
   compute_sTemplate[7] = "accumulator<%BASELINE%>11.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.z);\n";
-  std::string store_sTemplate = "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ")] = accumulator<%BASELINE%>00.x;\n";
+  std::string store_sTemplate = "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ")] = accumulator<%BASELINE%>00.x;\n"
+    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 1] = accumulator<%BASELINE%>00.y;\n"
+    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 2] = accumulator<%BASELINE%>01.x;\n"
+    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 3] = accumulator<%BASELINE%>01.y;\n"
+    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 4] = accumulator<%BASELINE%>10.x;\n"
+    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 5] = accumulator<%BASELINE%>10.y;\n"
+    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 6] = accumulator<%BASELINE%>11.x;\n"
+    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 7] = accumulator<%BASELINE%>11.y;\n";
   // End kernel's template
 
   std::string * define_s = new std::string();
