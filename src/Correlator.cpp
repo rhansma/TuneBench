@@ -25,7 +25,7 @@ std::string CorrelatorConf::print() const {
   return std::to_string(parallelTime) + " " + std::to_string(sequentialTime) + " " + isa::OpenCL::KernelConf::print();
 }
 
-std::string * getCorrelatorParallelTimeOpenCL(const isa::OpenCL::KernelConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
+std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
   std::string * code = new std::string();
 
   // Begin kernel's template
@@ -239,7 +239,7 @@ std::string * getCorrelatorParallelTimeOpenCL(const isa::OpenCL::KernelConf & co
   return code;
 }
 
-std::string * getCorrelatorSequentialTimeOpenCL(const isa::OpenCL::KernelConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
+std::string * getCorrelatorSequentialTimeOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
   std::string * code = new std::string();
 
   // Begin kernel's template
@@ -349,7 +349,7 @@ std::string * getCorrelatorSequentialTimeOpenCL(const isa::OpenCL::KernelConf & 
   return code;
 }
 
-std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
+std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
   if ( conf.getParallelTime() ) {
     return getCorrelatorParallelTimeOpenCL(conf, dataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
   } else if ( conf.getSequentialTime() ) {
