@@ -254,8 +254,8 @@ std::string * getCorrelatorSequentialTimeOpenCL(const CorrelatorConf & conf, con
     "}\n"
     "<%STORE%>"
     "}\n";
-  std::string define_sTemplate = "const unsigned int station<%STATION_X%> = baselineMap[((<%BASELINE%> + <%OFFSETD0%>) * 2)];\n"
-    "const unsigned int station<%STATION_Y%> = baselineMap[((<%BASELINE%> + <%OFFSETD0%>) * 2) + 1];\n"
+  std::string define_sTemplate = "const unsigned int station<%STATION_X%> = baselineMap[((baseline + <%OFFSETD0%>) * 2)];\n"
+    "const unsigned int station<%STATION_Y%> = baselineMap[((baseline + <%OFFSETD0%>) * 2) + 1];\n"
     + dataName + "4 sampleStation<%STATION_X%> = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "4 sampleStation<%STATION_Y%> = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "2 accumulator<%BASELINE%>00 = (" + dataName + "2)(0.0, 0.0);\n"
@@ -273,7 +273,7 @@ std::string * getCorrelatorSequentialTimeOpenCL(const CorrelatorConf & conf, con
   compute_sTemplate[5] = "accumulator<%BASELINE%>10.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.x);\n";
   compute_sTemplate[6] = "accumulator<%BASELINE%>11.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.w));\n";
   compute_sTemplate[7] = "accumulator<%BASELINE%>11.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.z);\n";
-  std::string store_sTemplate = "output[((<%BASELINE%> + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ")] = accumulator<%BASELINE%>00.x;\n";
+  std::string store_sTemplate = "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ")] = accumulator<%BASELINE%>00.x;\n";
   // End kernel's template
 
   std::string * define_s = new std::string();
@@ -310,7 +310,7 @@ std::string * getCorrelatorSequentialTimeOpenCL(const CorrelatorConf & conf, con
   for ( unsigned int sample = 0; sample < conf.getNrItemsD1(); sample++ ) {
     std::string offsetD1_s = std::to_string(sample);
 
-    for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
+    for ( unsigned int baseline = 0; baseline < conf.getNrItemsD0(); baseline++ ) {
       std::string stationX_s = std::to_string(baseline * 2);
       std::string stationY_s = std::to_string((baseline * 2) + 1);
 
