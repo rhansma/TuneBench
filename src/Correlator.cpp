@@ -292,7 +292,7 @@ std::string * getCorrelatorSequentialTimeOpenCL(const isa::OpenCL::KernelConf & 
     if ( baseline == 0 ) {
       temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
     } else {
-      temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetD0_s), true;
+      temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetD0_s, true);
     }
     temp = isa::utils::replace(temp, "<%STATION_X%>", stationX_s, true);
     temp = isa::utils::replace(temp, "<%STATION_Y%>", stationY_s, true);
