@@ -24,6 +24,22 @@ const unsigned int nrPolarizations = 2;
 
 namespace TuneBench {
 
+class CorrelatorConf : public isa::OpenCL::KernelConf {
+public:
+  CorrelatorConf();
+  // Get
+  inline bool getParallelTime() const;
+  inline bool getSequentialTime() const;
+  // Set
+  inline void setParallelTime(bool parallel);
+  inline void setSequentialTime(bool sequential);
+  // utils
+  std::string print() const;
+private:
+  bool parallelTime;
+  bool sequentialTime;
+};
+
 // Sequential
 template< typename T > void correlator(const std::vector< T > & input, std::vector< T > & output, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations);
 // OpenCL
@@ -32,6 +48,24 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
 void generateBaselineMap(std::vector< unsigned int > & baselineMap, const unsigned int nrStations);
 
 // Implementations
+inline bool CorrelatorConf::getParallelTime() const {
+  return parallelTime;
+}
+
+inline bool CorrelatorConf::getSequentialTime() const {
+  return sequentialTime;
+}
+
+inline void CorrelatorConf::setParallelTime(bool parallel) {
+  parallelTime = parallel;
+  sequentialTime = !parallel;
+}
+
+inline void CorrelatorConf::setSequentialTime(bool sequential) {
+  sequentialTime = sequential;
+  parallelTime = !sequential;
+}
+
 template< typename T > void correlator(const std::vector< T > & input, std::vector< T > & output, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
   for ( unsigned int channel = 0; channel < nrChannels; channel++ ) {
     for ( unsigned int station0 = 0; station0 < nrStations; station0++ ) {

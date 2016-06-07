@@ -45,11 +45,13 @@ int main(int argc, char * argv[]) {
   unsigned int nrChannels = 0;
   unsigned int nrStations = 0;
   unsigned int nrSamples = 0;
-  isa::OpenCL::KernelConf conf;
+  TuneBench::CorrelatorConf conf;
 
   try {
     isa::utils::ArgumentList args(argc, argv);
 
+    conf.setParallelTime(args.getSwitch("-parallel_time"));
+    conf.setSequentialTime(args.getSwitch("-sequential_time"));
     clPlatformID = args.getSwitchArgument< unsigned int >("-opencl_platform");
     clDeviceID = args.getSwitchArgument< unsigned int >("-opencl_device");
     padding = args.getSwitchArgument< unsigned int >("-padding");
@@ -61,7 +63,7 @@ int main(int argc, char * argv[]) {
     nrStations = args.getSwitchArgument< unsigned int >("-stations");
     nrSamples = args.getSwitchArgument< unsigned int >("-samples");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -padding ... -iterations ... -vector ... -max_threads ... -max_items ... -channels ... -stations ... -samples ..." << std::endl;
+    std::cerr << argv[0] << " [-parallel_time | -sequential_time] -opencl_platform ... -opencl_device ... -padding ... -iterations ... -vector ... -max_threads ... -max_items ... -channels ... -stations ... -samples ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
@@ -111,13 +113,31 @@ int main(int argc, char * argv[]) {
       }
       for ( unsigned int items = 1; items <= maxItems; items++ ) {
         conf.setNrItemsD0(items);
-        if ( nrSamples % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
-          continue;
-        }
-        for ( unsigned int items = 1; 1 + (items * 18) <= maxItems; items++ ) {
-          conf.setNrItemsD1(items);
-          if ( nrBaselines % conf.getNrItemsD1() != 0 ) {
+        if ( conf.getParallelTime() ) {
+          if ( nrSamples % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
             continue;
+          }
+        } else if ( conf.getSequentialTime() ) {
+          if ( (2 + (conf.getNrItemsD0() * 18)) > maxItems ) {
+            continue;
+          }
+          if ( nrBaselines % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
+            continue;
+          }
+        }
+        for ( unsigned int items = 1; items <= maxItems; items++ ) {
+          conf.setNrItemsD1(items);
+          if ( conf.getParallelTime() ) {
+            if ( (1 + (conf.getNrItemsD1() * 18)) > maxItems ) {
+              break;
+            }
+            if ( nrBaselines % conf.getNrItemsD1() != 0 ) {
+              continue;
+            }
+          } else if ( conf.getSequentialTime() ) {
+            if ( nrSamples % conf.getNrItemsD1() != 0 ) {
+              continue;
+            }
           }
 
           // Generate kernel
@@ -147,8 +167,15 @@ int main(int argc, char * argv[]) {
           }
           delete code;
 
-          cl::NDRange global(nrSamples / conf.getNrItemsD0(), nrBaselines / conf.getNrItemsD1(), nrChannels);
-          cl::NDRange local(conf.getNrThreadsD0(), 1, conf.getNrThreadsD2());
+          cl::NDRange global;
+          cl::NDRange local;
+          if ( conf.getParallelTime() ) {
+            global = cl::NDRange(nrSamples / conf.getNrItemsD0(), nrBaselines / conf.getNrItemsD1(), nrChannels);
+            local = cl::NDRange(conf.getNrThreadsD0(), 1, conf.getNrThreadsD2());
+          } else if ( conf.getSequentialTime() ) {
+            global = cl::NDRange(nrBaselines / conf.getNrItemsD0(), 1, nrChannels);
+            local = cl::NDRange(conf.getNrThreadsD0(), 1, conf.getNrThreadsD2());
+          }
 
           kernel->setArg(0, input_d);
           kernel->setArg(1, output_d);
