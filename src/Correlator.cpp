@@ -45,11 +45,7 @@ std::string * getCorrelatorOpenCL(const isa::OpenCL::KernelConf & conf, const st
     + dataName + "2 accumulator<%BASELINE%>10 = (" + dataName + "2)(0.0, 0.0);\n"
     + dataName + "2 accumulator<%BASELINE%>11 = (" + dataName + "2)(0.0, 0.0);\n";
   std::string load_sTemplate = "sampleStation<%STATION_X%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION_X%> * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n"
-    "if ( station<%STATION_X%> == station<%STATION_Y%> ) {\n"
-    "sampleStation<%STATION_Y%> = sampleStation<%STATION_X%>;\n"
-    "} else {\n"
-    "sampleStation<%STATION_Y%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION_Y%> * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n"
-    "}\n";
+    "sampleStation<%STATION_Y%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION_Y%> * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n";
   std::vector< std::string > compute_sTemplate(8);
   compute_sTemplate[0] = "accumulator<%BASELINE%>00.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.y));\n";
   compute_sTemplate[1] = "accumulator<%BASELINE%>00.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.x);\n";
