@@ -243,7 +243,7 @@ std::string * getCorrelatorSequentialTimeOpenCL(const CorrelatorConf & conf, con
   std::string * code = new std::string();
 
   // Begin kernel's template
-  *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + " * const restrict output, __global const unsigned int * const restrict baselineMap) {\n"
+  *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + "8 * const restrict output, __global const unsigned int * const restrict baselineMap) {\n"
     "const unsigned int baseline = (get_group_id(0) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0);\n"
     "const unsigned int channel = (get_group_id(2) * " + std::to_string(conf.getNrThreadsD2()) + ") + get_local_id(2);\n"
     "<%DEFINE%>"
@@ -258,29 +258,19 @@ std::string * getCorrelatorSequentialTimeOpenCL(const CorrelatorConf & conf, con
     "const unsigned int station<%STATION_Y%> = baselineMap[((baseline + <%OFFSETD0%>) * 2) + 1];\n"
     + dataName + "4 sampleStation<%STATION_X%> = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "4 sampleStation<%STATION_Y%> = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>00 = (" + dataName + "2)(0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>01 = (" + dataName + "2)(0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>10 = (" + dataName + "2)(0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>11 = (" + dataName + "2)(0.0, 0.0);\n";
+    + dataName + "8 accumulator<%BASELINE%> = (" + dataName + "8)(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);\n";
   std::string load_sTemplate = "sampleStation<%STATION_X%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION_X%> * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
     "sampleStation<%STATION_Y%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION_Y%> * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
   std::vector< std::string > compute_sTemplate(8);
-  compute_sTemplate[0] = "accumulator<%BASELINE%>00.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.y));\n";
-  compute_sTemplate[1] = "accumulator<%BASELINE%>00.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.x);\n";
-  compute_sTemplate[2] = "accumulator<%BASELINE%>01.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.w));\n";
-  compute_sTemplate[3] = "accumulator<%BASELINE%>01.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.z);\n";
-  compute_sTemplate[4] = "accumulator<%BASELINE%>10.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.y));\n";
-  compute_sTemplate[5] = "accumulator<%BASELINE%>10.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.x);\n";
-  compute_sTemplate[6] = "accumulator<%BASELINE%>11.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.w));\n";
-  compute_sTemplate[7] = "accumulator<%BASELINE%>11.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.z);\n";
-  std::string store_sTemplate = "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ")] = accumulator<%BASELINE%>00.x;\n"
-    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 1] = accumulator<%BASELINE%>00.y;\n"
-    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 2] = accumulator<%BASELINE%>01.x;\n"
-    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 3] = accumulator<%BASELINE%>01.y;\n"
-    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 4] = accumulator<%BASELINE%>10.x;\n"
-    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 5] = accumulator<%BASELINE%>10.y;\n"
-    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 6] = accumulator<%BASELINE%>11.x;\n"
-    "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 7] = accumulator<%BASELINE%>11.y;\n";
+  compute_sTemplate[0] = "accumulator<%BASELINE%>.0 += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.y));\n";
+  compute_sTemplate[1] = "accumulator<%BASELINE%>.1 += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.x);\n";
+  compute_sTemplate[2] = "accumulator<%BASELINE%>.2 += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.w));\n";
+  compute_sTemplate[3] = "accumulator<%BASELINE%>.3 += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.z);\n";
+  compute_sTemplate[4] = "accumulator<%BASELINE%>.4 += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.y));\n";
+  compute_sTemplate[5] = "accumulator<%BASELINE%>.5 += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.x);\n";
+  compute_sTemplate[6] = "accumulator<%BASELINE%>.6 += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.w));\n";
+  compute_sTemplate[7] = "accumulator<%BASELINE%>.7 += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.z);\n";
+  std::string store_sTemplate = "output[((baseline + <%OFFSETD0%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%BASELINE%>;\n";
   // End kernel's template
 
   std::string * define_s = new std::string();
