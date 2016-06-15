@@ -98,8 +98,8 @@ int main(int argc, char * argv[]) {
   }
   // Compute CPU control results
   std::fill(output.begin(), output.end(), 0);
-  TuneBench::correlator(input, output_c, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
   TuneBench::generateBaselineMap(baselineMap, nrStations);
+  TuneBench::correlator(input, output_c, baselineMap, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
 
   std::cout << std::fixed << std::endl;
   std::cout << "# nrChannels nrStations nrSamples nrPolarizations *configuration* GFLOP/s time stdDeviation COV" << std::endl << std::endl;

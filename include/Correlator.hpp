@@ -41,7 +41,7 @@ private:
 };
 
 // Sequential
-template< typename T > void correlator(const std::vector< T > & input, std::vector< T > & output, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations);
+template< typename T > void correlator(const std::vector< T > & input, std::vector< T > & output, const std::vector< unsigned int > & baselineMap, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations);
 // OpenCL
 std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations);
 
@@ -66,30 +66,31 @@ inline void CorrelatorConf::setSequentialTime(bool sequential) {
   parallelTime = !sequential;
 }
 
-template< typename T > void correlator(const std::vector< T > & input, std::vector< T > & output, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
+template< typename T > void correlator(const std::vector< T > & input, std::vector< T > & output, const std::vector< unsigned int > & baselineMap, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
+  const unsigned int nrBaselines = (nrStations * (nrStations + 1)) / 2;
+
   for ( unsigned int channel = 0; channel < nrChannels; channel++ ) {
-    for ( unsigned int station0 = 0; station0 < nrStations; station0++ ) {
-      for ( unsigned int station1 = 0; station1 <= station0; station1++ ) {
-        const unsigned int baseline = ((station0 * (station0 + 1)) / 2) + station1;
+    for ( unsigned int baseline = 0, baseline < nrBaselines; baseline++ ) {
+      unsigned int station0 = baselineMap[(baseline * 2)];
+      unsigned int station1 = baselineMap[(baseline * 2) + 1];
 
-        for ( unsigned int polarization0 = 0; polarization0 < nrPolarizations; polarization0++ ) {
-          for ( unsigned int polarization1 = 0; polarization1 < nrPolarizations; polarization1++ ) {
-            T accumulator[2] = {0.0, 0.0};
+      for ( unsigned int polarization0 = 0; polarization0 < nrPolarizations; polarization0++ ) {
+        for ( unsigned int polarization1 = 0; polarization1 < nrPolarizations; polarization1++ ) {
+          T accumulator[2] = {0.0, 0.0};
 
-            for ( unsigned int sample = 0; sample < nrSamples; sample++ ) {
-              T item0[2] = {0.0, 0.0};
-              T item1[2] = {0.0, 0.0};
+          for ( unsigned int sample = 0; sample < nrSamples; sample++ ) {
+            T item0[2] = {0.0, 0.0};
+            T item1[2] = {0.0, 0.0};
 
-              item0[0] = input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station0 * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization0 * 2)];
-              item0[1] = input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station0 * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization0 * 2) + 1];
-              item1[0] = input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station1 * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization1 * 2)];
-              item1[1] = input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station1 * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization1 * 2) + 1];
-              accumulator[0] += (item0[0] * item1[0]) - (item0[1] * (-item1[1]));
-              accumulator[1] += ((item0[0] + item0[1]) * (item1[0] - item1[1])) - (item0[0] * item1[0]) - (item0[1] * (-item1[1]));
-            }
-            output[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2)] = accumulator[0];
-            output[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2) + 1] = accumulator[1];
+            item0[0] = input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station0 * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization0 * 2)];
+            item0[1] = input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station0 * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization0 * 2) + 1];
+            item1[0] = input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station1 * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization1 * 2)];
+            item1[1] = input[(channel * nrStations * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (station1 * isa::utils::pad(nrSamples * nrPolarizations * 2, padding)) + (sample * nrPolarizations * 2) + (polarization1 * 2) + 1];
+            accumulator[0] += (item0[0] * item1[0]) - (item0[1] * (-item1[1]));
+            accumulator[1] += ((item0[0] + item0[1]) * (item1[0] - item1[1])) - (item0[0] * item1[0]) - (item0[1] * (-item1[1]));
           }
+          output[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2)] = accumulator[0];
+          output[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2) + 1] = accumulator[1];
         }
       }
     }
