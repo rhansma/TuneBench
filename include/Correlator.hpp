@@ -70,7 +70,7 @@ template< typename T > void correlator(const std::vector< T > & input, std::vect
   const unsigned int nrBaselines = (nrStations * (nrStations + 1)) / 2;
 
   for ( unsigned int channel = 0; channel < nrChannels; channel++ ) {
-    for ( unsigned int baseline = 0, baseline < nrBaselines; baseline++ ) {
+    for ( unsigned int baseline = 0; baseline < nrBaselines; baseline++ ) {
       unsigned int station0 = baselineMap[(baseline * 2)];
       unsigned int station1 = baselineMap[(baseline * 2) + 1];
 
