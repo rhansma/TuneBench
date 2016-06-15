@@ -254,7 +254,7 @@ std::string * getCorrelatorSequentialTimeOpenCL(const CorrelatorConf & conf, con
     "}\n"
     "<%STORE%>"
     "}\n";
-  std::string define_sTemplate = "const unsigned int station<%STATION%> = baselineMap[(baseline + <%OFFSETD0%>)];\n"
+  std::string define_sTemplate = "const uint2 station<%STATION%> = baselineMap[(baseline + <%OFFSETD0%>)];\n"
     + dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "8 accumulator<%BASELINE%> = (" + dataName + "8)(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);\n";
