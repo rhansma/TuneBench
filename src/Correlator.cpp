@@ -42,7 +42,7 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
     "unsigned int threshold = 0;\n"
     "<%REDUCE_AND_STORE%>"
     "}\n";
-  std::string define_sTemplate = "const uint2 station<%STATION%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + (<%BASELINE%>)];\n"
+  std::string define_sTemplate = "const uint2 station<%STATION%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>];\n"
     + dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
     + dataName + "8 accumulator<%BASELINE%> = (" + dataName + "8)(0.0);\n";
@@ -81,7 +81,7 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
   for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
     std::string baseline_s = std::to_string(baseline);
     if ( baseline == 0 ) {
-      temp = isa::utils::replace(&define_sTemplate, " + (<%BASELINE%> * 2)", empty_s);
+      temp = isa::utils::replace(&define_sTemplate, " + <%BASELINE%>", empty_s);
       temp = isa::utils::replace(temp, "<%BASELINE%>", baseline_s, true);
     } else {
       temp = isa::utils::replace(&define_sTemplate, "<%BASELINE%>", baseline_s);
