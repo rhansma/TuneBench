@@ -29,10 +29,10 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
   std::string * code = new std::string();
 
   // Begin kernel's template
-  *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + " * const restrict output, __global const unsigned int * const restrict baselineMap) {\n"
+  *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + "8 * const restrict output, __global const unsigned int * const restrict baselineMap) {\n"
     "const unsigned int channel = (get_group_id(2) * " + std::to_string(conf.getNrThreadsD2()) + ") + get_local_id(2);\n"
     "<%DEFINE%>"
-    "__local " + dataName + " buffer[" + std::to_string(conf.getNrThreadsD0() * conf.getNrThreadsD2()) + "];\n"
+    "__local " + dataName + "8 buffer[" + std::to_string(conf.getNrThreadsD0() * conf.getNrThreadsD2()) + "];\n"
     "\n"
     "// Compute\n"
     "for ( unsigned int sample = get_local_id(0); sample < " + std::to_string(nrSamples) + "; sample += " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
@@ -42,128 +42,33 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
     "unsigned int threshold = 0;\n"
     "<%REDUCE_AND_STORE%>"
     "}\n";
-  std::string define_sTemplate = "const unsigned int station<%STATION_X%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + (<%BASELINE%> * 2)];\n"
-    "const unsigned int station<%STATION_Y%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1() * 2) + ") + (<%BASELINE%> * 2) + 1];\n"
-    + dataName + "4 sampleStation<%STATION_X%> = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
-    + dataName + "4 sampleStation<%STATION_Y%> = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>00 = (" + dataName + "2)(0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>01 = (" + dataName + "2)(0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>10 = (" + dataName + "2)(0.0, 0.0);\n"
-    + dataName + "2 accumulator<%BASELINE%>11 = (" + dataName + "2)(0.0, 0.0);\n";
-  std::string load_sTemplate = "sampleStation<%STATION_X%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION_X%> * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n"
-    "sampleStation<%STATION_Y%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION_Y%> * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n";
+  std::string define_sTemplate = "const uint2 station<%STATION%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + (<%BASELINE%>)];\n"
+    + dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
+    + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
+    + dataName + "8 accumulator<%BASELINE%> = (" + dataName + "8)(0.0);\n";
+  std::string load_sTemplate = "sampleStation<%STATION%>X = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION%>.s0 * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n"
+    "sampleStation<%STATION%>Y = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION%>.s1 * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n";
   std::vector< std::string > compute_sTemplate(8);
-  compute_sTemplate[0] = "accumulator<%BASELINE%>00.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.y));\n";
-  compute_sTemplate[1] = "accumulator<%BASELINE%>00.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.x);\n";
-  compute_sTemplate[2] = "accumulator<%BASELINE%>01.x += (sampleStation<%STATION_X%>.x * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.y * (-sampleStation<%STATION_Y%>.w));\n";
-  compute_sTemplate[3] = "accumulator<%BASELINE%>01.y += (sampleStation<%STATION_X%>.x * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.y * sampleStation<%STATION_Y%>.z);\n";
-  compute_sTemplate[4] = "accumulator<%BASELINE%>10.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.x) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.y));\n";
-  compute_sTemplate[5] = "accumulator<%BASELINE%>10.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.y)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.x);\n";
-  compute_sTemplate[6] = "accumulator<%BASELINE%>11.x += (sampleStation<%STATION_X%>.z * sampleStation<%STATION_Y%>.z) - (sampleStation<%STATION_X%>.w * (-sampleStation<%STATION_Y%>.w));\n";
-  compute_sTemplate[7] = "accumulator<%BASELINE%>11.y += (sampleStation<%STATION_X%>.z * (-sampleStation<%STATION_Y%>.w)) + (sampleStation<%STATION_X%>.w * sampleStation<%STATION_Y%>.z);\n";
+  compute_sTemplate[0] = "accumulator<%BASELINE%>.s0 += (sampleStation<%STATION%>X.x * sampleStation<%STATION%>Y.x) - (sampleStation<%STATION%>X.y * (-sampleStation<%STATION%>Y.y));\n";
+  compute_sTemplate[1] = "accumulator<%BASELINE%>.s1 += (sampleStation<%STATION%>X.x * (-sampleStation<%STATION%>Y.y)) + (sampleStation<%STATION%>X.y * sampleStation<%STATION%>Y.x);\n";
+  compute_sTemplate[2] = "accumulator<%BASELINE%>.s2 += (sampleStation<%STATION%>X.x * sampleStation<%STATION%>Y.z) - (sampleStation<%STATION%>X.y * (-sampleStation<%STATION%>Y.w));\n";
+  compute_sTemplate[3] = "accumulator<%BASELINE%>.s3 += (sampleStation<%STATION%>X.x * (-sampleStation<%STATION%>Y.w)) + (sampleStation<%STATION%>X.y * sampleStation<%STATION%>Y.z);\n";
+  compute_sTemplate[4] = "accumulator<%BASELINE%>.s4 += (sampleStation<%STATION%>X.z * sampleStation<%STATION%>Y.x) - (sampleStation<%STATION%>X.w * (-sampleStation<%STATION%>Y.y));\n";
+  compute_sTemplate[5] = "accumulator<%BASELINE%>.s5 += (sampleStation<%STATION%>X.z * (-sampleStation<%STATION%>Y.y)) + (sampleStation<%STATION%>X.w * sampleStation<%STATION%>Y.x);\n";
+  compute_sTemplate[6] = "accumulator<%BASELINE%>.s6 += (sampleStation<%STATION%>X.z * sampleStation<%STATION%>Y.z) - (sampleStation<%STATION%>X.w * (-sampleStation<%STATION%>Y.w));\n";
+  compute_sTemplate[7] = "accumulator<%BASELINE%>.s7 += (sampleStation<%STATION%>X.z * (-sampleStation<%STATION%>Y.w)) + (sampleStation<%STATION%>X.w * sampleStation<%STATION%>Y.z);\n";
   std::string reduceStore_sTemplate = "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>00.x;\n"
+    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>00;\n"
     "barrier(CLK_LOCAL_MEM_FENCE);\n"
     "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
     "if ( item < threshold ) {\n"
-    "accumulator<%BASELINE%>00.x += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>00.x;\n"
+    "accumulator<%BASELINE%> += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
+    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>;\n"
     "}\n"
     "barrier(CLK_LOCAL_MEM_FENCE);\n"
     "}\n"
     "if ( get_local_id(0) == 0 ) {\n"
-    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ")] = accumulator<%BASELINE%>00.x;\n"
-    "}\n"
-    "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>00.y;\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
-    "if ( item < threshold ) {\n"
-    "accumulator<%BASELINE%>00.y += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>00.y;\n"
-    "}\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "}\n"
-    "if ( get_local_id(0) == 0 ) {\n"
-    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 1] = accumulator<%BASELINE%>00.y;\n"
-    "}\n"
-    "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>01.x;\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
-    "if ( item < threshold ) {\n"
-    "accumulator<%BASELINE%>01.x += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>01.x;\n"
-    "}\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "}\n"
-    "if ( get_local_id(0) == 0 ) {\n"
-    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 2] = accumulator<%BASELINE%>01.x;\n"
-    "}\n"
-    "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>01.y;\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
-    "if ( item < threshold ) {\n"
-    "accumulator<%BASELINE%>01.y += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>01.y;\n"
-    "}\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "}\n"
-    "if ( get_local_id(0) == 0 ) {\n"
-    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 3] = accumulator<%BASELINE%>01.y;\n"
-    "}\n"
-    "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>10.x;\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
-    "if ( item < threshold ) {\n"
-    "accumulator<%BASELINE%>10.x += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>10.x;\n"
-    "}\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "}\n"
-    "if ( get_local_id(0) == 0 ) {\n"
-    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 4] = accumulator<%BASELINE%>10.x;\n"
-    "}\n"
-    "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>10.y;\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
-    "if ( item < threshold ) {\n"
-    "accumulator<%BASELINE%>10.y += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>10.y;\n"
-    "}\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "}\n"
-    "if ( get_local_id(0) == 0 ) {\n"
-    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 5] = accumulator<%BASELINE%>10.y;\n"
-    "}\n"
-    "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>11.x;\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
-    "if ( item < threshold ) {\n"
-    "accumulator<%BASELINE%>11.x += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>11.x;\n"
-    "}\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "}\n"
-    "if ( get_local_id(0) == 0 ) {\n"
-    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 6] = accumulator<%BASELINE%>11.x;\n"
-    "}\n"
-    "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>11.y;\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
-    "if ( item < threshold ) {\n"
-    "accumulator<%BASELINE%>11.y += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>11.y;\n"
-    "}\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "}\n"
-    "if ( get_local_id(0) == 0 ) {\n"
-    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels * nrPolarizations * nrPolarizations * 2) + ") + (channel * " + std::to_string(nrPolarizations * nrPolarizations * 2) + ") + 7] = accumulator<%BASELINE%>11.y;\n"
+    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%BASELINE%>;\n"
     "}\n";
   // End kernel's template
 
@@ -175,17 +80,13 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
 
   for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
     std::string baseline_s = std::to_string(baseline);
-    std::string stationX_s = std::to_string(baseline * 2);
-    std::string stationY_s = std::to_string((baseline * 2) + 1);
-
     if ( baseline == 0 ) {
       temp = isa::utils::replace(&define_sTemplate, " + (<%BASELINE%> * 2)", empty_s);
       temp = isa::utils::replace(temp, "<%BASELINE%>", baseline_s, true);
     } else {
       temp = isa::utils::replace(&define_sTemplate, "<%BASELINE%>", baseline_s);
     }
-    temp = isa::utils::replace(temp, "<%STATION_X%>", stationX_s, true);
-    temp = isa::utils::replace(temp, "<%STATION_Y%>", stationY_s, true);
+    temp = isa::utils::replace(temp, "<%STATION%>", baseline_s, true);
     define_s->append(*temp);
     delete temp;
     if ( baseline == 0 ) {
@@ -201,11 +102,8 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
     std::string offsetD0_s = std::to_string(sample * conf.getNrThreadsD0());
 
     for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
-      std::string stationX_s = std::to_string(baseline * 2);
-      std::string stationY_s = std::to_string((baseline * 2) + 1);
 
-      temp = isa::utils::replace(&load_sTemplate, "<%STATION_X%>", stationX_s);
-      temp = isa::utils::replace(temp, "<%STATION_Y%>", stationY_s, true);
+      temp = isa::utils::replace(&load_sTemplate, "<%STATION%>", baseline_s);
       if ( sample == 0 ) {
         temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
       } else {
@@ -217,12 +115,9 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
     for ( unsigned int computeStatement = 0; computeStatement < 8; computeStatement++ ) {
       for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
         std::string baseline_s = std::to_string(baseline);
-        std::string stationX_s = std::to_string(baseline * 2);
-        std::string stationY_s = std::to_string((baseline * 2) + 1);
 
         temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%BASELINE%>", baseline_s);
-        temp = isa::utils::replace(temp, "<%STATION_X%>", stationX_s, true);
-        temp = isa::utils::replace(temp, "<%STATION_Y%>", stationY_s, true);
+        temp = isa::utils::replace(temp, "<%STATION%>", baseline_s, true);
         loadCompute_s->append(*temp);
         delete temp;
       }
