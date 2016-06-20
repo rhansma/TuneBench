@@ -102,7 +102,7 @@ int main(int argc, char * argv[]) {
         }
 
         // Generate kernel
-        double gflops = isa::utils::giga(static_cast< uint64_t >(nrAtoms) * nrAtoms * 29);
+        double gflops = isa::utils::giga(static_cast< uint64_t >(nrAtoms) * nrAtoms * 29.0);
         cl::Event clEvent;
         cl::Kernel * kernel;
         isa::utils::Timer timer;

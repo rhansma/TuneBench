@@ -98,7 +98,7 @@ int main(int argc, char * argv[]) {
         }
 
         // Generate kernel
-        double gbytes = isa::utils::giga(static_cast< uint64_t >(inputSize) * sizeof(inputDataType) * 3);
+        double gbytes = isa::utils::giga(static_cast< uint64_t >(inputSize) * sizeof(inputDataType) * 3.0);
         cl::Event clEvent;
         cl::Kernel * kernel;
         isa::utils::Timer timer;
