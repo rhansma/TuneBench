@@ -32,15 +32,25 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
   *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + "8 * const restrict output, __global const uint2 * const restrict baselineMap) {\n"
     "const unsigned int channel = (get_group_id(2) * " + std::to_string(conf.getNrThreadsD2()) + ") + get_local_id(2);\n"
     "<%DEFINE%>"
-    "__local " + dataName + "8 buffer[" + std::to_string(conf.getNrThreadsD0() * conf.getNrThreadsD2()) + "];\n"
+    "__local " + dataName + "8 buffer[" + std::to_string(conf.getNrThreadsD0() * conf.getNrThreadsD2() * conf.getNrItemsD1()) + "];\n"
     "\n"
     "// Compute\n"
     "for ( unsigned int sample = get_local_id(0); sample < " + std::to_string(nrSamples) + "; sample += " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD0()) + " ) {\n"
     "<%LOAD_AND_COMPUTE%>"
     "}\n"
     "// Reduce and Store\n"
-    "unsigned int threshold = 0;\n"
-    "<%REDUCE_AND_STORE%>"
+    "unsigned int threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
+    "<%REDUCE_LOAD%>"
+    "barrier(CLK_LOCAL_MEM_FENCE);\n"
+    "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
+    "if ( item < threshold ) {\n"
+    "<%REDUCE_COMPUTE%>"
+    "}\n"
+    "barrier(CLK_LOCAL_MEM_FENCE);\n"
+    "}\n"
+    "if ( get_local_id(0) == 0 ) {\n"
+    "<%STORE%>"
+    "}\n"
     "}\n";
   std::string define_sTemplate = "const uint2 station<%STATION%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>];\n"
     + dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
@@ -57,29 +67,24 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
   compute_sTemplate[5] = "accumulator<%BASELINE%>.s5 += (sampleStation<%STATION%>X.z * (-sampleStation<%STATION%>Y.y)) + (sampleStation<%STATION%>X.w * sampleStation<%STATION%>Y.x);\n";
   compute_sTemplate[6] = "accumulator<%BASELINE%>.s6 += (sampleStation<%STATION%>X.z * sampleStation<%STATION%>Y.z) - (sampleStation<%STATION%>X.w * (-sampleStation<%STATION%>Y.w));\n";
   compute_sTemplate[7] = "accumulator<%BASELINE%>.s7 += (sampleStation<%STATION%>X.z * (-sampleStation<%STATION%>Y.w)) + (sampleStation<%STATION%>X.w * sampleStation<%STATION%>Y.z);\n";
-  std::string reduceStore_sTemplate = "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>;\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
-    "if ( item < threshold ) {\n"
-    "accumulator<%BASELINE%> += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item + threshold];\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + item] = accumulator<%BASELINE%>;\n"
-    "}\n"
-    "barrier(CLK_LOCAL_MEM_FENCE);\n"
-    "}\n"
-    "if ( get_local_id(0) == 0 ) {\n"
-    "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%BASELINE%>;\n"
-    "}\n";
+  std::string reduceLoad_sTemplate = "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD1()) + ") + get_local_id(0) + <%BASELINE_OFFSET%>] = accumulator<%BASELINE%>;\n";
+  std::string reduceCompute_sTemplate = "accumulator<%BASELINE%> += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD1()) + ") + item + threshold + <%BASELINE_OFFSET%>];\n"
+    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD1()) + ") + item + <%BASELINE_OFFSET%>] = accumulator<%BASELINE%>;\n";
+  std::string store_sTemplate = "output[(((get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%BASELINE%>;\n";
   // End kernel's template
 
   std::string * define_s = new std::string();
   std::string * loadCompute_s = new std::string();
-  std::string * reduceStore_s = new std::string();
+  std::string * reduceLoad_s = new std::string();
+  std::string * reduceCompute_s = new std::string();
+  std::strong * store_s = new std::string();
   std::string * temp = 0;
   std::string empty_s = "";
 
   for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
     std::string baseline_s = std::to_string(baseline);
+    std::string baselineOffset_s = std::string(baseline * conf.getNrThreadsD0());
+
     if ( baseline == 0 ) {
       temp = isa::utils::replace(&define_sTemplate, " + <%BASELINE%>", empty_s);
       temp = isa::utils::replace(temp, "<%BASELINE%>", baseline_s, true);
@@ -89,13 +94,24 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
     temp = isa::utils::replace(temp, "<%STATION%>", baseline_s, true);
     define_s->append(*temp);
     delete temp;
+    temp = isa::utils::replace(&reduceLoad_sTemplate, "<%BASELINE%>", baseline_s);
     if ( baseline == 0 ) {
-      temp = isa::utils::replace(&reduceStore_sTemplate, " + <%BASELINE%>", empty_s);
-      temp = isa::utils::replace(temp, "<%BASELINE%>", baseline_s, true);
+      temp = isa::utils::replace(temp, " + <%BASELINE_OFFSET%>", empty_s, true);
     } else {
-      temp = isa::utils::replace(&reduceStore_sTemplate, "<%BASELINE%>", baseline_s);
+      temp = isa::utils::replace(temp, "<%BASELINE_OFFSET%>", baselineOffset_s, true);
     }
-    reduceStore_s->append(*temp);
+    reduceLoad_s->append(*temp);
+    delete temp;
+    temp = isa::utils::replace(&reduceCompute_sTemplate, "<%BASELINE%>", baseline_s);
+    if ( baseline == 0 ) {
+      temp = isa::utils::replace(temp, " + <%BASELINE_OFFSET%>", empty_s, true);
+    } else {
+      temp = isa::utils::replace(temp, "<%BASELINE_OFFSET%>", baselineOffset_s, true);
+    }
+    reduceCompute_s->append(*temp);
+    delete temp;
+    temp = isa::utils::replace(&store_sTemplate, "<%BASELINE%>", baseline_s);
+    store_s->append(*temp);
     delete temp;
   }
   for ( unsigned int sample = 0; sample < conf.getNrItemsD0(); sample++ ) {
@@ -127,10 +143,14 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
 
   code = isa::utils::replace(code, "<%DEFINE%>", *define_s, true);
   code = isa::utils::replace(code, "<%LOAD_AND_COMPUTE%>", *loadCompute_s, true);
-  code = isa::utils::replace(code, "<%REDUCE_AND_STORE%>", *reduceStore_s, true);
+  code = isa::utils::replace(code, "<%REDUCE_LOAD%>", *reduceLoad_s, true);
+  code = isa::utils::replace(code, "<%REDUCE_COMPUTE%>", *reduceCompute_s, true);
+  code = isa::utils::replace(code, "<%STORE%>", *store_s, true);
   delete define_s;
   delete loadCompute_s;
-  delete reduceStore_s;
+  delete reduceLoad_s;
+  delete reduceCompute_s;
+  delete store_s;
 
   return code;
 }
