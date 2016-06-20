@@ -77,7 +77,7 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
   std::string * loadCompute_s = new std::string();
   std::string * reduceLoad_s = new std::string();
   std::string * reduceCompute_s = new std::string();
-  std::strong * store_s = new std::string();
+  std::string * store_s = new std::string();
   std::string * temp = 0;
   std::string empty_s = "";
 
