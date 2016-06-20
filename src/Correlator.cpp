@@ -58,7 +58,7 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
   compute_sTemplate[6] = "accumulator<%BASELINE%>.s6 += (sampleStation<%STATION%>X.z * sampleStation<%STATION%>Y.z) - (sampleStation<%STATION%>X.w * (-sampleStation<%STATION%>Y.w));\n";
   compute_sTemplate[7] = "accumulator<%BASELINE%>.s7 += (sampleStation<%STATION%>X.z * (-sampleStation<%STATION%>Y.w)) + (sampleStation<%STATION%>X.w * sampleStation<%STATION%>Y.z);\n";
   std::string reduceStore_sTemplate = "threshold = " + std::to_string(conf.getNrThreadsD0() / 2) + ";\n"
-    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>00;\n"
+    "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0)] = accumulator<%BASELINE%>;\n"
     "barrier(CLK_LOCAL_MEM_FENCE);\n"
     "for ( unsigned int item = get_local_id(0); threshold > 0; threshold /= 2 ) {\n"
     "if ( item < threshold ) {\n"
