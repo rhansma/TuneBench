@@ -102,6 +102,7 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
     std::string offsetD0_s = std::to_string(sample * conf.getNrThreadsD0());
 
     for ( unsigned int baseline = 0; baseline < conf.getNrItemsD1(); baseline++ ) {
+      std::string baseline_s = std::to_string(baseline);
 
       temp = isa::utils::replace(&load_sTemplate, "<%STATION%>", baseline_s);
       if ( sample == 0 ) {
