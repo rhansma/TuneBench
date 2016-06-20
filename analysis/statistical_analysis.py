@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# Copyright 2016 Alessio Sclocco <a.sclocco@vu.nl>
+#!/usr/bin/env python # Copyright 2016 Alessio Sclocco <a.sclocco@vu.nl>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Functions to retrieve statistical properties of the data."""
+
+import statistics
 
 def get_quartiles(db_queue, table, benchmark, scenario):
     """Returns the quartiles performance, rounded to integers."""
@@ -67,5 +68,39 @@ def get_histogram(db_queue, table, benchmark, scenario):
             results[value] = 1
         else:
             results[value] = results[value] + 1
+    return results
+
+def get_tuning_variability(db_queue, tables, benchmark, scenarios):
+    """Return the coefficient of variability of the optimal configurations."""
+    extra = ""
+    metrics = ""
+    if benchmark.lower() == "triad":
+        extra = "vector,"
+        metrics = "GBs,"
+    elif benchmark.lower() == "reduction":
+        extra = "nrItemsPerBlock,vector,"
+        metrics = "GBs,"
+    elif benchmark.lower() == "stencil":
+        extra = "localMemory,"
+        metrics = "GFLOPs,"
+    elif benchmark.lower() == "md":
+        metrics = "GFLOPs,"
+    elif benchmark.lower() == "correlator":
+        metrics = "GFLOPs,"
+    parameters = list()
+    for table in tables:
+        for scenario in scenarios:
+            db_queue.execute("SELECT " + extra + "nrThreadsD0,nrThreadsD1,nrThreadsD2,nrItemsD0,nrItemsD1,nrItemsD2 FROM " + table + " WHERE (" + metrics.rstrip(",") + " = (SELECT MAX(" + metrics.rstrip(",") + ") FROM " + table + " WHERE (" + scenario + "))) AND (" + scenario + ")")
+            best = db_queue.fetchall()
+            if len(parameters) == 0:
+                for item in range(0, len(best[0])):
+                    parameters.append(list())
+                    parameters[item].append(best[0][item])
+            else:
+                for item in range(0, len(best[0])):
+                    parameters[item].append(best[0][item])
+    results = list()
+    for parameter in parameters:
+        results.append(statistics.stdev(parameter) / statistics.mean(parameter))
     return results
 

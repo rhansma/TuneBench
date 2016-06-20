@@ -20,10 +20,10 @@ import pymysql
 import config
 import management
 import tuning
-import statistics
+import statistical_analysis
 
 if len(sys.argv) == 1:
-    print("Supported commmands are: list_tables, create, delete, load, list_values, tune, quartiles, histogram")
+    print("Supported commmands are: create, delete, load, list_tables, list_values, tune, quartiles, histogram, tuning_variability")
     print("Type \"" + sys.argv[0] + " <command>\" for specific help.")
     sys.exit(1)
 
@@ -103,16 +103,24 @@ elif COMMAND == "quartiles":
         print("Usage: \"" + sys.argv[0] + " quartiles <table> <benchmark> <scenario>\"")
         print("Returns the quartiles for the data in the table, for a given scenario.")
     else:
-        management.print_tuples(statistics.get_quartiles(DB_QUEUE, sys.argv[2], sys.argv[3], sys.argv[4]))
+        management.print_tuples(statistical_analysis.get_quartiles(DB_QUEUE, sys.argv[2], sys.argv[3], sys.argv[4]))
 elif COMMAND == "histogram":
     if len(sys.argv) != 5:
         print("Usage: \"" + sys.argv[0] + " histogram <table> <benchmark> <scenario>\"")
         print("Returns the histogram of the data in the table, for a given scenario.")
     else:
-        RESULTS = statistics.get_histogram(DB_QUEUE, sys.argv[2], sys.argv[3], sys.argv[4])
+        RESULTS = statistical_analysis.get_histogram(DB_QUEUE, sys.argv[2], sys.argv[3], sys.argv[4])
         ITEMS = sorted(RESULTS.keys())
         for item in ITEMS:
             print(item, RESULTS[item])
+elif COMMAND == "tuning_variability":
+    if len(sys.argv) != 5:
+        print("Usage: \"" + sys.argv[0] + " tune \"<tables>\" <benchmark> \"<scenarios>\"\"")
+        print("Returns the coefficient of variability of each parameter of the optimal configuratio.")
+    else:
+        TABLES = sys.argv[2].split()
+        SCENARIOS = sys.argv[4].split()
+        management.print_tuples(statistical_analysis.get_tuning_variability(DB_QUEUE, TABLES, sys.argv[3], SCENARIOS))
 else:
     print("Unknown command.")
     print("Type \"" + sys.argv[0]  + "\" for a list of supported commands.")
