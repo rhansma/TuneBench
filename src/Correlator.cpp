@@ -29,7 +29,7 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
   std::string * code = new std::string();
 
   // Begin kernel's template
-  *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + "8 * const restrict output, __global const unsigned int * const restrict baselineMap) {\n"
+  *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + "8 * const restrict output, __global const uint2 * const restrict baselineMap) {\n"
     "const unsigned int channel = (get_group_id(2) * " + std::to_string(conf.getNrThreadsD2()) + ") + get_local_id(2);\n"
     "<%DEFINE%>"
     "__local " + dataName + "8 buffer[" + std::to_string(conf.getNrThreadsD0() * conf.getNrThreadsD2()) + "];\n"
