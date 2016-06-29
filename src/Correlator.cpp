@@ -269,12 +269,34 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
 }
 
 void generateBaselineMap(const CorrelatorConf & conf, std::vector< unsigned int > & baselineMap, const unsigned int nrStations) {
+  unsigned int nrBaselines = (nrStations * (nrStations + 1)) / 2;
+  unsigned int baselinesPerBlock = 0;
+  std::vector< unsigned int > tempMap(baselineMap.size());
+
   for ( unsigned int station0 = 0; station0 < nrStations; station0++ ) {
     for ( unsigned int station1 = 0; station1 <= station0; station1++ ) {
       unsigned int baseline = ((station0 * (station0 + 1)) / 2) + station1;
 
-      baselineMap[baseline * 2] = station0;
-      baselineMap[(baseline * 2) + 1] = station1;
+      tempMap[baseline * 2] = station0;
+      tempMap[(baseline * 2) + 1] = station1;
+    }
+  }
+  if ( conf.getParallelTime() ) {
+    baselinesPerBlock = conf.getNrItemsD1();
+  }
+  if ( conf.getSequentialTime() ) {
+    baselinesPerBlock = conf.getNrItemsD0();
+  }
+  for ( unsigned int baseline = 0; baseline < nrBaselines; baseline += baselinesPerBlock ) {
+    for ( unsigned int block = 0; block < baselinesPerBlock; block++ ) {
+      if ( conf.getParallelTime() ) {
+        baselineMap[(baseline + block) * 2] = tempMap[(baseline + block) * 2];
+        baselineMap[((baseline + block) * 2) + 1] = tempMap[((baseline + block) * 2) + 1];
+      }
+      if ( conf.getSequentialTime() ) {
+        baselineMap[(baseline + (block * conf.getNrThreadsD0())) * 2] = tempMap[(baseline + block) * 2];
+        baselineMap[((baseline + (block * conf.getNrThreadsD0())) * 2) + 1] = tempMap[((baseline + block) * 2) + 1];
+      }
     }
   }
 }

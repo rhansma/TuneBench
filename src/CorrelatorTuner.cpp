@@ -34,7 +34,6 @@ const unsigned int magicValue = 42;
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * input, cl::Buffer * input_d, const unsigned int outputSize, cl::Buffer * output_d, std::vector< unsigned int > * baselineMap, cl::Buffer * baselineMap_d);
 
 int main(int argc, char * argv[]) {
-  bool reInit = true;
   unsigned int padding = 0;
   unsigned int nrIterations = 0;
   unsigned int clPlatformID = 0;
@@ -98,8 +97,6 @@ int main(int argc, char * argv[]) {
   }
   // Compute CPU control results
   std::fill(output.begin(), output.end(), 0);
-  TuneBench::generateBaselineMap(conf, baselineMap, nrStations);
-  TuneBench::correlator(input, output_c, baselineMap, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
 
   std::cout << std::fixed << std::endl;
   std::cout << "# nrChannels nrStations nrSamples nrPolarizations *configuration* GFLOP/s time stdDeviation COV" << std::endl << std::endl;
@@ -147,16 +144,14 @@ int main(int argc, char * argv[]) {
           isa::utils::Timer timer;
           std::string * code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
 
-          if ( reInit ) {
-            delete clQueues;
-            clQueues = new std::vector< std::vector< cl::CommandQueue > >();
-            isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
-            try {
-              initializeDeviceMemory(clContext, &(clQueues->at(clDeviceID)[0]), &input, &input_d, nrChannels * nrBaselines * nrPolarizations * nrPolarizations * 2, &output_d, &baselineMap, &baselineMap_d);
-            } catch ( cl::Error & err ) {
-              return -1;
-            }
-            reInit = false;
+          delete clQueues;
+          clQueues = new std::vector< std::vector< cl::CommandQueue > >();
+          isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
+          try {
+            initializeDeviceMemory(clContext, &(clQueues->at(clDeviceID)[0]), &input, &input_d, nrChannels * nrBaselines * nrPolarizations * nrPolarizations * 2, &output_d, &baselineMap, &baselineMap_d);
+            TuneBench::correlator(input, output_c, baselineMap, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
+          } catch ( cl::Error & err ) {
+            return -1;
           }
           try {
             kernel = isa::OpenCL::compile("correlator", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
@@ -241,6 +236,7 @@ void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue,
     *input_d = cl::Buffer(clContext, CL_MEM_READ_ONLY, input->size() * sizeof(inputDataType), 0, 0);
     *output_d = cl::Buffer(clContext, CL_MEM_WRITE_ONLY, outputSize * sizeof(inputDataType), 0, 0);
     *baselineMap_d = cl::Buffer(clContext, CL_MEM_READ_ONLY, baselineMap->size() * sizeof(unsigned int), 0, 0);
+    TuneBench::generateBaselineMap(conf, baselineMap, nrStations);
     clQueue->enqueueWriteBuffer(*input_d, CL_FALSE, 0, input->size() * sizeof(inputDataType), reinterpret_cast< void * >(input->data()));
     clQueue->enqueueWriteBuffer(*baselineMap_d, CL_FALSE, 0, baselineMap->size() * sizeof(unsigned int), reinterpret_cast< void * >(baselineMap->data()));
     clQueue->finish();
