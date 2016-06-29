@@ -148,6 +148,7 @@ int main(int argc, char * argv[]) {
           clQueues = new std::vector< std::vector< cl::CommandQueue > >();
           isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
           try {
+            TuneBench::generateBaselineMap(conf, baselineMap, nrStations);
             initializeDeviceMemory(clContext, &(clQueues->at(clDeviceID)[0]), &input, &input_d, nrChannels * nrBaselines * nrPolarizations * nrPolarizations * 2, &output_d, &baselineMap, &baselineMap_d);
             TuneBench::correlator(input, output_c, baselineMap, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
           } catch ( cl::Error & err ) {
@@ -191,7 +192,6 @@ int main(int argc, char * argv[]) {
             clQueues->at(clDeviceID)[0].enqueueReadBuffer(output_d, CL_TRUE, 0, output.size() * sizeof(inputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
             clEvent.wait();
           } catch ( cl::Error & err ) {
-            reInit = true;
             std::cerr << "OpenCL kernel execution error (";
             std::cerr << conf.print();
             std::cerr << "): ";
@@ -236,7 +236,6 @@ void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue,
     *input_d = cl::Buffer(clContext, CL_MEM_READ_ONLY, input->size() * sizeof(inputDataType), 0, 0);
     *output_d = cl::Buffer(clContext, CL_MEM_WRITE_ONLY, outputSize * sizeof(inputDataType), 0, 0);
     *baselineMap_d = cl::Buffer(clContext, CL_MEM_READ_ONLY, baselineMap->size() * sizeof(unsigned int), 0, 0);
-    TuneBench::generateBaselineMap(conf, baselineMap, nrStations);
     clQueue->enqueueWriteBuffer(*input_d, CL_FALSE, 0, input->size() * sizeof(inputDataType), reinterpret_cast< void * >(input->data()));
     clQueue->enqueueWriteBuffer(*baselineMap_d, CL_FALSE, 0, baselineMap->size() * sizeof(unsigned int), reinterpret_cast< void * >(baselineMap->data()));
     clQueue->finish();
