@@ -53,8 +53,8 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
     "}\n"
     "}\n";
   std::string define_sTemplate = "const uint2 station<%STATION%> = baselineMap[(get_group_id(1) * " + std::to_string(conf.getNrItemsD1()) + ") + <%BASELINE%>];\n"
-    + dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
-    + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
+    + dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0);\n"
+    + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0);\n"
     + dataName + "8 accumulator<%BASELINE%> = (" + dataName + "8)(0.0);\n";
   std::string load_sTemplate = "sampleStation<%STATION%>X = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION%>.s0 * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n"
     "sampleStation<%STATION%>Y = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION%>.s1 * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n";
@@ -176,9 +176,9 @@ std::string * getCorrelatorSequentialTimeOpenCL(const CorrelatorConf & conf, con
     "<%STORE%>"
     "}\n";
   std::string define_sTemplate = "const uint2 station<%STATION%> = baselineMap[(baseline + <%OFFSETD0%>)];\n"
-    + dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
-    + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0, 0.0, 0.0, 0.0);\n"
-    + dataName + "8 accumulator<%BASELINE%> = (" + dataName + "8)(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);\n";
+    + dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0);\n"
+    + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0);\n"
+    + dataName + "8 accumulator<%BASELINE%> = (" + dataName + "8)(0.0);\n";
   std::string load_sTemplate = "sampleStation<%STATION%>X = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION%>.s0 * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
     "sampleStation<%STATION%>Y = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + (station<%STATION%>.s1 * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
   std::vector< std::string > compute_sTemplate(8);
