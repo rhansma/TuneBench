@@ -45,7 +45,7 @@ template< typename T > void correlator(const std::vector< T > & input, std::vect
 // OpenCL
 std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations);
 
-void generateBaselineMap(std::vector< unsigned int > & baselineMap, const unsigned int nrStations);
+void generateBaselineMap(const CorrelatorConf & conf, std::vector< unsigned int > & baselineMap, const unsigned int nrStations);
 
 // Implementations
 inline bool CorrelatorConf::getParallelTime() const {
