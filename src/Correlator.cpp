@@ -110,7 +110,12 @@ std::string * getCorrelatorParallelTimeOpenCL(const CorrelatorConf & conf, const
     }
     reduceCompute_s->append(*temp);
     delete temp;
-    temp = isa::utils::replace(&store_sTemplate, "<%BASELINE%>", baseline_s);
+    if ( baseline == 0 ) {
+      temp = isa::utils::replace(&store_sTemplate, " + <%BASELINE%>", empty_s);
+      temp = isa::utils::replace(temp, "<%BASELINE%>", baseline_s, true);
+    } else {
+      temp = isa::utils::replace(&store_sTemplate, "<%BASELINE%>", baseline_s);
+    }
     store_s->append(*temp);
     delete temp;
   }
