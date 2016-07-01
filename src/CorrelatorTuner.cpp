@@ -29,6 +29,7 @@
 #include <Timer.hpp>
 #include <Stats.hpp>
 
+
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * input, cl::Buffer * input_d, const unsigned int outputSize, cl::Buffer * output_d, const unsigned int cellMapSize, cl::Buffer * cellMapX_d, cl::Buffer * cellMapY_d);
 
 int main(int argc, char * argv[]) {

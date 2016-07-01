@@ -29,7 +29,6 @@
 #include <Timer.hpp>
 #include <Stats.hpp>
 
-const unsigned int factor = 42;
 
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * A, cl::Buffer * A_d, std::vector< inputDataType > * B, cl::Buffer * B_d, cl::Buffer * C_d);
 

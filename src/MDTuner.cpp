@@ -29,9 +29,6 @@
 #include <Timer.hpp>
 #include <Stats.hpp>
 
-const unsigned int magicValue = 42;
-const float LJ1 = 1.5f;
-const float LJ2 = 2.0f;
 
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * input, cl::Buffer * input_d, cl::Buffer * output_d);
 

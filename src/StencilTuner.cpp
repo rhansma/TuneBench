@@ -28,7 +28,6 @@
 #include <Timer.hpp>
 #include <Stats.hpp>
 
-const inputDataType magicValue = 42;
 
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * input, cl::Buffer * input_d, cl::Buffer * output_d, const unsigned int outputSize);
 
