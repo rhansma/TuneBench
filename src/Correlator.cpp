@@ -30,7 +30,7 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
 
   // Begin kernel's template
   *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + "8 * const restrict output, __global const unsigned int * const restrict cellMapX, __global const unsigned int * const restrict cellMapY) {\n"
-    "const unsigned int cell = (get_group_id(0) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0);\n"
+    "const unsigned int cell = (get_group_id(0) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0);\n"
     "const unsigned int channel = (get_group_id(2) * " + std::to_string(conf.getNrThreadsD2()) + ") + get_local_id(2);\n"
     "const unsigned int baseStationX = cellMapX[cell];\n"
     "const unsigned int baseStationY = cellMapY[cell];\n"
