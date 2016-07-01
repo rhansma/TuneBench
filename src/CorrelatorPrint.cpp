@@ -30,18 +30,17 @@ int main(int argc, char * argv[]) {
   try {
     isa::utils::ArgumentList args(argc, argv);
 
-    conf.setParallelTime(args.getSwitch("-parallel_time"));
-    conf.setSequentialTime(args.getSwitch("-sequential_time"));
     conf.setNrThreadsD0(args.getSwitchArgument< unsigned int >("-threads_d0"));
     conf.setNrThreadsD2(args.getSwitchArgument< unsigned int >("-threads_d2"));
-    conf.setNrItemsD0(args.getSwitchArgument< unsigned int >("-items_d0"));
+    conf.setCell(args.getSwitchArgument< unsigned int >("-width"), args.getSwitchArgument< unsigned int >("-height"));
+    conf.setNrItemsD0(conf.getWidth() * conf.getHeight());
     conf.setNrItemsD1(args.getSwitchArgument< unsigned int >("-items_d1"));
     nrChannels = args.getSwitchArgument< unsigned int >("-channels");
     nrStations = args.getSwitchArgument< unsigned int >("-stations");
     nrSamples = args.getSwitchArgument< unsigned int >("-samples");
     padding = args.getSwitchArgument< unsigned int >("-padding");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " [-parallel_time | -sequential_time] -threads_d0 ... -threads_d2 ... -items_d0 ... -items_d1 ... -channels ... -stations ... -samples ... -padding ..." << std::endl;
+    std::cerr << argv[0] << " -threads_d0 ... -threads_d2 ... -width ... -height ... -items_d1 ... -channels ... -stations ... -samples ... -padding ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;

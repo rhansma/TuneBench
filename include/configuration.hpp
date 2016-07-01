@@ -21,5 +21,11 @@ std::string inputDataName("float");
 typedef float outputDataType;
 std::string outputDataName("float");
 
+// Magic value
+const unsigned int magicValue = 42;
+
+// Correlator
+const unsigned int nrPolarizations = 2;
+
 #endif // CONFIGURATION_TUNEBENCH_HPP
 
