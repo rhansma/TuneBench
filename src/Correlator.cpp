@@ -32,8 +32,8 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
   *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + "8 * const restrict output, __global const unsigned int * const restrict cellMapX, __global const unsigned int * const restrict cellMapY) {\n"
     "const unsigned int cell = (get_group_id(0) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0);\n"
     "const unsigned int channel = (get_group_id(2) * " + std::to_string(conf.getNrThreadsD2()) + ") + get_local_id(2);\n"
-    "const unsigned int stationX = cellMapX[cell];\n"
-    "const unsigned int stationY = cellMapY[cell];\n"
+    "const unsigned int baseStationX = cellMapX[cell];\n"
+    "const unsigned int baseStationY = cellMapY[cell];\n"
     "<%DEFINE_STATION%>"
     "<%DEFINE_CELL%>"
     "\n"
@@ -43,20 +43,22 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
     "}\n"
     "<%STORE%>"
     "}\n";
-  std::string defineStation_sTemplate = dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0);\n"
-    + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0);\n";
+  std::string defineStationX_sTemplate = dataName + "4 sampleStation<%STATION%>XP0 = (" + dataName + "4)(0.0);\n";
+  std::string defineStationY_sTemplate = dataName + "4 sampleStation<%STATION%>YP1 = (" + dataName + "4)(0.0);\n";
   std::string defineCell_sTemplate = dataName + "8 accumulator<%CELL%> = (" + dataName + "8)(0.0);\n";
-  std::string load_sTemplate = "sampleStation<%STATION%>X = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((stationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
-    "sampleStation<%STATION%>Y = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((stationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
+  std::string loadX_sTemplate = "sampleStation<%STATION%>XP0 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
+    "sampleStation<%STATION%>XP1 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
+  std::string loadY_sTemplate = "sampleStation<%STATION%>YP0 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
+    "sampleStation<%STATION%>YP1 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
   std::vector< std::string > compute_sTemplate(8);
-  compute_sTemplate[0] = "accumulator<%CELL%>.s0 += (sampleStation<%STATION%>X.x * sampleStation<%STATION%>Y.x) - (sampleStation<%STATION%>X.y * (-sampleStation<%STATION%>Y.y));\n";
-  compute_sTemplate[1] = "accumulator<%CELL%>.s1 += (sampleStation<%STATION%>X.x * (-sampleStation<%STATION%>Y.y)) + (sampleStation<%STATION%>X.y * sampleStation<%STATION%>Y.x);\n";
-  compute_sTemplate[2] = "accumulator<%CELL%>.s2 += (sampleStation<%STATION%>X.x * sampleStation<%STATION%>Y.z) - (sampleStation<%STATION%>X.y * (-sampleStation<%STATION%>Y.w));\n";
-  compute_sTemplate[3] = "accumulator<%CELL%>.s3 += (sampleStation<%STATION%>X.x * (-sampleStation<%STATION%>Y.w)) + (sampleStation<%STATION%>X.y * sampleStation<%STATION%>Y.z);\n";
-  compute_sTemplate[4] = "accumulator<%CELL%>.s4 += (sampleStation<%STATION%>X.z * sampleStation<%STATION%>Y.x) - (sampleStation<%STATION%>X.w * (-sampleStation<%STATION%>Y.y));\n";
-  compute_sTemplate[5] = "accumulator<%CELL%>.s5 += (sampleStation<%STATION%>X.z * (-sampleStation<%STATION%>Y.y)) + (sampleStation<%STATION%>X.w * sampleStation<%STATION%>Y.x);\n";
-  compute_sTemplate[6] = "accumulator<%CELL%>.s6 += (sampleStation<%STATION%>X.z * sampleStation<%STATION%>Y.z) - (sampleStation<%STATION%>X.w * (-sampleStation<%STATION%>Y.w));\n";
-  compute_sTemplate[7] = "accumulator<%CELL%>.s7 += (sampleStation<%STATION%>X.z * (-sampleStation<%STATION%>Y.w)) + (sampleStation<%STATION%>X.w * sampleStation<%STATION%>Y.z);\n";
+  compute_sTemplate[0] = "accumulator<%CELL%>.s0 += (sampleStation<%STATION%>P0.x * sampleStation<%STATION%>P1.x) - (sampleStation<%STATION%>P0.y * (-sampleStation<%STATION%>P1.y));\n";
+  compute_sTemplate[1] = "accumulator<%CELL%>.s1 += (sampleStation<%STATION%>P0.x * (-sampleStation<%STATION%>P1.y)) + (sampleStation<%STATION%>P0.y * sampleStation<%STATION%>P1.x);\n";
+  compute_sTemplate[2] = "accumulator<%CELL%>.s2 += (sampleStation<%STATION%>P0.x * sampleStation<%STATION%>P1.z) - (sampleStation<%STATION%>P0.y * (-sampleStation<%STATION%>P1.w));\n";
+  compute_sTemplate[3] = "accumulator<%CELL%>.s3 += (sampleStation<%STATION%>P0.x * (-sampleStation<%STATION%>P1.w)) + (sampleStation<%STATION%>P0.y * sampleStation<%STATION%>P1.z);\n";
+  compute_sTemplate[4] = "accumulator<%CELL%>.s4 += (sampleStation<%STATION%>P0.z * sampleStation<%STATION%>P1.x) - (sampleStation<%STATION%>P0.w * (-sampleStation<%STATION%>P1.y));\n";
+  compute_sTemplate[5] = "accumulator<%CELL%>.s5 += (sampleStation<%STATION%>P0.z * (-sampleStation<%STATION%>P1.y)) + (sampleStation<%STATION%>P0.w * sampleStation<%STATION%>P1.x);\n";
+  compute_sTemplate[6] = "accumulator<%CELL%>.s6 += (sampleStation<%STATION%>P0.z * sampleStation<%STATION%>P1.z) - (sampleStation<%STATION%>P0.w * (-sampleStation<%STATION%>P1.w));\n";
+  compute_sTemplate[7] = "accumulator<%CELL%>.s7 += (sampleStation<%STATION%>P0.z * (-sampleStation<%STATION%>P1.w)) + (sampleStation<%STATION%>P0.w * sampleStation<%STATION%>P1.z);\n";
   std::string store_sTemplate = "output[(((((stationY + <%HEIGHT%>) * (stationY + <%HEIGHT%> + 1)) / 2) + stationX + <%WIDTH%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%CELL%>;\n";
   // End kernel's template
 
@@ -67,61 +69,82 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
   std::string * temp = 0;
   std::string empty_s = "";
 
-  for ( unsigned int station = 0; station < conf.getCellWidth() + conf.getCellHeight(); station++ ) {
-  }
-  for ( unsigned int cell = 0; cell < conf.getNrItemsD0(); cell++ ) {
-    std::string cell_s = std::to_string(cell);
-    std::string offsetD0_s = std::to_string(cell * conf.getNrThreadsD0());
+  for ( unsigned int width = 0; width < conf.getCellWidth(); width++ ) {
+    std::string width_s = std::to_string(width);
 
-    temp = isa::utils::replace(&define_sTemplate, "<%CELL%>", cell_s);
-    if ( cell == 0 ) {
-      temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
-    } else {
-      temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetD0_s, true);
-    }
-    temp = isa::utils::replace(temp, "<%STATION%>", cell_s, true);
-    define_s->append(*temp);
+    temp = isa::utils::replace(&defineStationX_sTemplate, "<%STATION%>", width_s);
+    defineStation_s->append(*temp);
     delete temp;
-    temp = isa::utils::replace(&store_sTemplate, "<%CELL%>", cell_s);
-    if ( cell == 0 ) {
-      temp = isa::utils::replace(temp, " + <%OFFSETD0%>", empty_s, true);
-    } else {
-      temp = isa::utils::replace(temp, "<%OFFSETD0%>", offsetD0_s, true);
-    }
-    store_s->append(*temp);
+  }
+  for ( unsigned int height = 0; height < conf.getCellHeight(); height++ ) {
+    std::string height_s = std::to_string(height);
+
+    temp = isa::utils::replace(&defineStationY_sTemplate, "<%STATION%>", height_s);
+    defineStation_s->append(*temp);
     delete temp;
+  }
+  for ( unsigned int width = 0; width < conf.getCellWidth(); width++ ) {
+    for ( unsigned int height = 0; height < conf.getCellHeight(); height++ ) {
+      std::string cell_s = std::to_string(width) + std::to_string(height);
+      std::string width_s = std::to_string(width);
+      std::string height_s = std::to_string(height);
+
+      temp = isa::utils::replace(&defineCell_sTemplate, "<%CELL%>", cell_s);
+      defineCell_s->append(*temp);
+      delete temp;
+      temp = isa::utils::replace(&store_sTemplate, "<%WIDTH%>", width_s);
+      temp = isa::utils::replace(temp, "<%HEIGHT%>", height_s, true);
+      store_s->append(*temp);
+      delete temp;
+    }
   }
   for ( unsigned int sample = 0; sample < conf.getNrItemsD1(); sample++ ) {
     std::string offsetD1_s = std::to_string(sample);
 
-    for ( unsigned int cell = 0; cell < conf.getNrItemsD0(); cell++ ) {
-      std::string cell_s = std::to_string(cell);
+    for ( unsigned int width = 0; width < conf.getCellWidth(); width++ ) {
+      std::string width_s = std::to_string(width);
 
-      temp = isa::utils::replace(&load_sTemplate, "<%STATION%>", cell_s);
-      if ( sample == 0 ) {
-        temp = isa::utils::replace(temp, " + <%OFFSETD1%>", empty_s, true);
+      if ( width == 0 ) {
+        temp = isa::utils::replace(&loadX_sTemplate, "+ <%WIDTH%>", empty_s);
       } else {
-        temp = isa::utils::replace(temp, "<%OFFSETD1%>", offsetD1_s, true);
+        temp = isa::utils::replace(&loadX_sTemplate, "<%WIDTH%>", width_s);
       }
+      temp = isa::utils::replace(temp, "<%STATION%>", width_s, true);
       loadCompute_s->append(*temp);
       delete temp;
     }
-    for ( unsigned int computeStatement = 0; computeStatement < 8; computeStatement++ ) {
-      for ( unsigned int cell = 0; cell < conf.getNrItemsD0(); cell++ ) {
-        std::string cell_s = std::to_string(cell);
+    for ( unsigned int height = 0; height < conf.getCellHeight(); height++ ) {
+      std::string height_s = std::to_string(height);
 
-        temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%CELL%>", cell_s);
-        temp = isa::utils::replace(temp, "<%STATION%>", cell_s, true);
-        loadCompute_s->append(*temp);
-        delete temp;
+      if ( height == 0 ) {
+        temp = isa::utils::replace(&loadY_sTemplate, "+ <%WIDTH%>", empty_s);
+      } else {
+        temp = isa::utils::replace(&loadY_sTemplate, "<%WIDTH%>", height_s);
+      }
+      temp = isa::utils::replace(temp, "<%STATION%>", height_s, true);
+      loadCompute_s->append(*temp);
+      delete temp;
+    }
+    loadCompute_s = isa::utils::replace(loadCompute_s, "<%OFFSETD1%>", offsetD1_s, true);
+    for ( unsigned int computeStatement = 0; computeStatement < 8; computeStatement++ ) {
+      for ( unsigned int width = 0; width < conf.getCellWidth(); width++ ) {
+        for ( unsigned int height = 0; height < conf.getCellHeight(); height++ ) {
+          std::string cell_s = std::to_string(width) + std::to_string(height);
+
+          temp = isa::utils::replace(&compute_sTemplate[computeStatement], "<%CELL%>", cell_s);
+          loadCompute_s->append(*temp);
+          delete temp;
+        }
       }
     }
   }
 
-  code = isa::utils::replace(code, "<%DEFINE%>", *define_s, true);
+  code = isa::utils::replace(code, "<%DEFINE_STATION%>", *defineStation_s, true);
+  code = isa::utils::replace(code, "<%DEFINE_CELL%>", *defineCell_s, true);
   code = isa::utils::replace(code, "<%LOAD_AND_COMPUTE%>", *loadCompute_s, true);
   code = isa::utils::replace(code, "<%STORE%>", *store_s, true);
-  delete define_s;
+  delete defineStation_s;
+  delete defineCell_s;
   delete loadCompute_s;
   delete store_s;
 
