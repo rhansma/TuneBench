@@ -109,6 +109,9 @@ int main(int argc, char * argv[]) {
 
   for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
     conf.setNrThreadsD0(threads);
+    if ( nrCells % conf.getNrThreadsD0() != 0 ) {
+      continue;
+    }
     for ( unsigned int threads = 1; (conf.getNrThreadsD0() * threads) <= maxThreads; threads++ ) {
       conf.setNrThreadsD2(threads);
       if ( nrChannels % conf.getNrThreadsD2() != 0 ) {
@@ -119,7 +122,7 @@ int main(int argc, char * argv[]) {
         for ( unsigned int height = 1; height <= maxItems; height++ ) {
           conf.setCellHeight(height);
           conf.setNrItemsD0(width * height);
-          if ( ((4 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * conf.getNrItemsD0())) > maxItems) || (nrCells % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0) ) {
+          if ( (4 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * conf.getNrItemsD0())) > maxItems ) {
             continue;
           }
           nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
