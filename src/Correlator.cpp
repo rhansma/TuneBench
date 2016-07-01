@@ -134,7 +134,11 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
       loadCompute_s->append(*temp);
       delete temp;
     }
-    loadCompute_s = isa::utils::replace(loadCompute_s, "<%OFFSETD1%>", offsetD1_s, true);
+    if ( sample == 0 ) {
+      loadCompute_s = isa::utils::replace(loadCompute_s, " + <%OFFSETD1%>", empty_s, true);
+    } else {
+      loadCompute_s = isa::utils::replace(loadCompute_s, "<%OFFSETD1%>", offsetD1_s, true);
+    }
     for ( unsigned int computeStatement = 0; computeStatement < 8; computeStatement++ ) {
       for ( unsigned int width = 0; width < conf.getCellWidth(); width++ ) {
         for ( unsigned int height = 0; height < conf.getCellHeight(); height++ ) {
