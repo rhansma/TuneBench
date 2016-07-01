@@ -33,7 +33,7 @@ int main(int argc, char * argv[]) {
     conf.setNrThreadsD0(args.getSwitchArgument< unsigned int >("-threads_d0"));
     conf.setNrThreadsD2(args.getSwitchArgument< unsigned int >("-threads_d2"));
     conf.setCell(args.getSwitchArgument< unsigned int >("-width"), args.getSwitchArgument< unsigned int >("-height"));
-    conf.setNrItemsD0(conf.getWidth() * conf.getHeight());
+    conf.setNrItemsD0(conf.getCellWidth() * conf.getCellHeight());
     conf.setNrItemsD1(args.getSwitchArgument< unsigned int >("-items_d1"));
     nrChannels = args.getSwitchArgument< unsigned int >("-channels");
     nrStations = args.getSwitchArgument< unsigned int >("-stations");
