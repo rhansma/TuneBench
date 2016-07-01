@@ -43,13 +43,13 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
     "}\n"
     "<%STORE%>"
     "}\n";
-  std::string defineStationX_sTemplate = dataName + "4 sampleStation<%STATION%>XP0 = (" + dataName + "4)(0.0);\n";
-  std::string defineStationY_sTemplate = dataName + "4 sampleStation<%STATION%>YP1 = (" + dataName + "4)(0.0);\n";
+  std::string defineStationX_sTemplate = dataName + "4 sampleStationX<%STATION%>P0 = (" + dataName + "4)(0.0);\n";
+  std::string defineStationY_sTemplate = dataName + "4 sampleStationY<%STATION%>P1 = (" + dataName + "4)(0.0);\n";
   std::string defineCell_sTemplate = dataName + "8 accumulator<%CELL%> = (" + dataName + "8)(0.0);\n";
-  std::string loadX_sTemplate = "sampleStation<%STATION%>XP0 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
-    "sampleStation<%STATION%>XP1 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
-  std::string loadY_sTemplate = "sampleStation<%STATION%>YP0 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
-    "sampleStation<%STATION%>YP1 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
+  std::string loadX_sTemplate = "sampleStationX<%STATION%>P0 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
+    "sampleStationX<%STATION%>P1 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
+  std::string loadY_sTemplate = "sampleStationY<%STATION%>P0 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
+    "sampleStationY<%STATION%>P1 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
   std::vector< std::string > compute_sTemplate(8);
   compute_sTemplate[0] = "accumulator<%CELL%>.s0 += (sampleStation<%STATION%>P0.x * sampleStation<%STATION%>P1.x) - (sampleStation<%STATION%>P0.y * (-sampleStation<%STATION%>P1.y));\n";
   compute_sTemplate[1] = "accumulator<%CELL%>.s1 += (sampleStation<%STATION%>P0.x * (-sampleStation<%STATION%>P1.y)) + (sampleStation<%STATION%>P0.y * sampleStation<%STATION%>P1.x);\n";
@@ -92,8 +92,17 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
       temp = isa::utils::replace(&defineCell_sTemplate, "<%CELL%>", cell_s);
       defineCell_s->append(*temp);
       delete temp;
-      temp = isa::utils::replace(&store_sTemplate, "<%WIDTH%>", width_s);
-      temp = isa::utils::replace(temp, "<%HEIGHT%>", height_s, true);
+      if ( width == 0 ) {
+        temp = isa::utils::replace(&store_sTemplate, " + <%WIDTH%>", empty_s);
+      } else {
+        temp = isa::utils::replace(&store_sTemplate, "<%WIDTH%>", width_s);
+      }
+      if ( height == 0 ) {
+        temp = isa::utils::replace(temp, " + <%HEIGHT%>", empty_s, true);
+      } else {
+        temp = isa::utils::replace(temp, "<%HEIGHT%>", height_s, true);
+      }
+      temp = isa::utils::replace(temp, "<%CELL%>", cell_s, true);
       store_s->append(*temp);
       delete temp;
     }
