@@ -126,9 +126,9 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
       std::string height_s = std::to_string(height);
 
       if ( height == 0 ) {
-        temp = isa::utils::replace(&loadY_sTemplate, "+ <%WIDTH%>", empty_s);
+        temp = isa::utils::replace(&loadY_sTemplate, "+ <%HEIGHT%>", empty_s);
       } else {
-        temp = isa::utils::replace(&loadY_sTemplate, "<%WIDTH%>", height_s);
+        temp = isa::utils::replace(&loadY_sTemplate, "<%HEIGHT%>", height_s);
       }
       temp = isa::utils::replace(temp, "<%STATION%>", height_s, true);
       loadCompute_s->append(*temp);
