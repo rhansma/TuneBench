@@ -57,7 +57,7 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
   compute_sTemplate[5] = "accumulator<%CELL%>.s5 += (sampleStationX<%STATIONX%>.z * (-sampleStationY<%STATIONY%>.y)) + (sampleStationX<%STATIONX%>.w * sampleStationY<%STATIONY%>.x);\n";
   compute_sTemplate[6] = "accumulator<%CELL%>.s6 += (sampleStationX<%STATIONX%>.z * sampleStationY<%STATIONY%>.z) - (sampleStationX<%STATIONX%>.w * (-sampleStationY<%STATIONY%>.w));\n";
   compute_sTemplate[7] = "accumulator<%CELL%>.s7 += (sampleStationX<%STATIONX%>.z * (-sampleStationY<%STATIONY%>.w)) + (sampleStationX<%STATIONX%>.w * sampleStationY<%STATIONY%>.z);\n";
-  std::string store_sTemplate = "output[(((((stationY + <%HEIGHT%>) * (stationY + <%HEIGHT%> + 1)) / 2) + stationX + <%WIDTH%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%CELL%>;\n";
+  std::string store_sTemplate = "output[(((((stationY + <%HEIGHT%>) * (stationY + <%HEIGHT%> + 1)) / 2) + baseStationX + <%WIDTH%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%CELL%>;\n";
   // End kernel's template
 
   std::string * defineStation_s = new std::string();
