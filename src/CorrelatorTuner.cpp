@@ -118,8 +118,7 @@ int main(int argc, char * argv[]) {
         conf.setCellWidth(width);
         for ( unsigned int height = 1; height <= maxItems; height++ ) {
           conf.setCellHeight(height);
-          conf.setNrItemsD0(width * height);
-          if ( (4 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * conf.getNrItemsD0())) > maxItems ) {
+          if ( (4 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
             continue;
           }
           nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
