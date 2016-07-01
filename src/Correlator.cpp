@@ -114,7 +114,7 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
       std::string width_s = std::to_string(width);
 
       if ( width == 0 ) {
-        temp = isa::utils::replace(&loadX_sTemplate, "+ <%WIDTH%>", empty_s);
+        temp = isa::utils::replace(&loadX_sTemplate, " + <%WIDTH%>", empty_s);
       } else {
         temp = isa::utils::replace(&loadX_sTemplate, "<%WIDTH%>", width_s);
       }
@@ -126,7 +126,7 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
       std::string height_s = std::to_string(height);
 
       if ( height == 0 ) {
-        temp = isa::utils::replace(&loadY_sTemplate, "+ <%HEIGHT%>", empty_s);
+        temp = isa::utils::replace(&loadY_sTemplate, " + <%HEIGHT%>", empty_s);
       } else {
         temp = isa::utils::replace(&loadY_sTemplate, "<%HEIGHT%>", height_s);
       }
