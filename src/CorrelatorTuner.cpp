@@ -115,9 +115,11 @@ int main(int argc, char * argv[]) {
         continue;
       }
       for ( unsigned int width = 1; width <= maxItems; width++ ) {
+        conf.setCellWidth(width);
         for ( unsigned int height = 1; height <= maxItems; height++ ) {
+          conf.setCellHeight(height);
           conf.setNrItemsD0(width * height);
-          if ( ((2 + (conf.getNrItemsD0() * 18)) > maxItems) || (nrCells % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0) ) {
+          if ( ((4 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * conf.getNrItemsD0())) > maxItems) || (nrCells % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0) ) {
             continue;
           }
           nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
