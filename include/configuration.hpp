@@ -24,6 +24,9 @@ std::string outputDataName("float");
 // Magic value
 const unsigned int magicValue = 42;
 
+// Triad
+const unsigned int factor = 42;
+
 // MD
 const float LJ1 = 1.5f;
 const float LJ2 = 2.0f;
