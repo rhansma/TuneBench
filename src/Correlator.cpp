@@ -34,7 +34,8 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
     "const unsigned int channel = (get_group_id(2) * " + std::to_string(conf.getNrThreadsD2()) + ") + get_local_id(2);\n"
     "const unsigned int stationX = cellMapX[cell];\n"
     "const unsigned int stationY = cellMapY[cell];\n"
-    "<%DEFINE%>"
+    "<%DEFINE_STATION%>"
+    "<%DEFINE_CELL%>"
     "\n"
     "// Compute\n"
     "for ( unsigned int sample = 0; sample < " + std::to_string(nrSamples) + "; sample += " + std::to_string(conf.getNrItemsD1()) + " ) {\n"
@@ -42,11 +43,11 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
     "}\n"
     "<%STORE%>"
     "}\n";
-  std::string define_sTemplate = dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0);\n"
-    + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0);\n"
-    + dataName + "8 accumulator<%CELL%> = (" + dataName + "8)(0.0);\n";
-  std::string load_sTemplate = "sampleStation<%STATION%>X = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((station + <%STATION%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
-    "sampleStation<%STATION%>Y = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((station + <%STATION%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
+  std::string defineStation_sTemplate = dataName + "4 sampleStation<%STATION%>X = (" + dataName + "4)(0.0);\n"
+    + dataName + "4 sampleStation<%STATION%>Y = (" + dataName + "4)(0.0);\n";
+  std::string defineCell_sTemplate = dataName + "8 accumulator<%CELL%> = (" + dataName + "8)(0.0);\n";
+  std::string load_sTemplate = "sampleStation<%STATION%>X = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((stationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
+    "sampleStation<%STATION%>Y = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((stationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
   std::vector< std::string > compute_sTemplate(8);
   compute_sTemplate[0] = "accumulator<%CELL%>.s0 += (sampleStation<%STATION%>X.x * sampleStation<%STATION%>Y.x) - (sampleStation<%STATION%>X.y * (-sampleStation<%STATION%>Y.y));\n";
   compute_sTemplate[1] = "accumulator<%CELL%>.s1 += (sampleStation<%STATION%>X.x * (-sampleStation<%STATION%>Y.y)) + (sampleStation<%STATION%>X.y * sampleStation<%STATION%>Y.x);\n";
@@ -59,12 +60,15 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
   std::string store_sTemplate = "output[(((((stationY + <%HEIGHT%>) * (stationY + <%HEIGHT%> + 1)) / 2) + stationX + <%WIDTH%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%CELL%>;\n";
   // End kernel's template
 
-  std::string * define_s = new std::string();
+  std::string * defineStation_s = new std::string();
+  std::string * defineCell_s = new std::string();
   std::string * loadCompute_s = new std::string();
   std::string * store_s = new std::string();
   std::string * temp = 0;
   std::string empty_s = "";
 
+  for ( unsigned int station = 0; station < conf.getCellWidth() + conf.getCellHeight(); station++ ) {
+  }
   for ( unsigned int cell = 0; cell < conf.getNrItemsD0(); cell++ ) {
     std::string cell_s = std::to_string(cell);
     std::string offsetD0_s = std::to_string(cell * conf.getNrThreadsD0());
