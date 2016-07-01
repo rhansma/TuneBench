@@ -105,7 +105,7 @@ int main(int argc, char * argv[]) {
   TuneBench::correlator(input, output_c, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
 
   std::cout << std::fixed << std::endl;
-  std::cout << "# nrChannels nrStations nrSamples nrPolarizations nrCells *configuration* GFLOP/s time stdDeviation COV" << std::endl << std::endl;
+  std::cout << "# nrChannels nrStations nrSamples nrPolarizations nrBaselines nrCells *configuration* GFLOP/s time stdDeviation COV" << std::endl << std::endl;
 
   for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
     conf.setNrThreadsD0(threads);
@@ -246,7 +246,7 @@ int main(int argc, char * argv[]) {
               continue;
             }
 
-            std::cout << nrChannels << " " << nrStations << " " << nrSamples << " " << nrPolarizations << " " << nrCells << " ";
+            std::cout << nrChannels << " " << nrStations << " " << nrSamples << " " << nrPolarizations << " " << nrBaselines << " " << nrCells << " ";
             std::cout << conf.print() << " ";
             std::cout << std::setprecision(3);
             std::cout << gflops / timer.getAverageTime() << " ";
