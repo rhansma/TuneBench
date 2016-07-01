@@ -43,22 +43,20 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
     "}\n"
     "<%STORE%>"
     "}\n";
-  std::string defineStationX_sTemplate = dataName + "4 sampleStationX<%STATION%>P0 = (" + dataName + "4)(0.0);\n";
-  std::string defineStationY_sTemplate = dataName + "4 sampleStationY<%STATION%>P1 = (" + dataName + "4)(0.0);\n";
+  std::string defineStationX_sTemplate = dataName + "4 sampleStationX<%STATION%> = (" + dataName + "4)(0.0);\n";
+  std::string defineStationY_sTemplate = dataName + "4 sampleStationY<%STATION%> = (" + dataName + "4)(0.0);\n";
   std::string defineCell_sTemplate = dataName + "8 accumulator<%CELL%> = (" + dataName + "8)(0.0);\n";
-  std::string loadX_sTemplate = "sampleStationX<%STATION%>P0 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
-    "sampleStationX<%STATION%>P1 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
-  std::string loadY_sTemplate = "sampleStationY<%STATION%>P0 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n"
-    "sampleStationY<%STATION%>P1 = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
+  std::string loadX_sTemplate = "sampleStationX<%STATION%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
+  std::string loadY_sTemplate = "sampleStationY<%STATION%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD1%>)];\n";
   std::vector< std::string > compute_sTemplate(8);
-  compute_sTemplate[0] = "accumulator<%CELL%>.s0 += (sampleStationX<%STATIONX%>P0.x * sampleStationY<%STATIONY%>P1.x) - (sampleStationX<%STATIONX%>P0.y * (-sampleStationY<%STATIONY%>P1.y));\n";
-  compute_sTemplate[1] = "accumulator<%CELL%>.s1 += (sampleStationX<%STATIONX%>P0.x * (-sampleStationY<%STATIONY%>P1.y)) + (sampleStationX<%STATIONX%>P0.y * sampleStationY<%STATIONY%>P1.x);\n";
-  compute_sTemplate[2] = "accumulator<%CELL%>.s2 += (sampleStationX<%STATIONX%>P0.x * sampleStationY<%STATIONY%>P1.z) - (sampleStationX<%STATIONX%>P0.y * (-sampleStationY<%STATIONY%>P1.w));\n";
-  compute_sTemplate[3] = "accumulator<%CELL%>.s3 += (sampleStationX<%STATIONX%>P0.x * (-sampleStationY<%STATIONY%>P1.w)) + (sampleStationX<%STATIONX%>P0.y * sampleStationY<%STATIONY%>P1.z);\n";
-  compute_sTemplate[4] = "accumulator<%CELL%>.s4 += (sampleStationX<%STATIONX%>P0.z * sampleStationY<%STATIONY%>P1.x) - (sampleStationX<%STATIONX%>P0.w * (-sampleStationY<%STATIONY%>P1.y));\n";
-  compute_sTemplate[5] = "accumulator<%CELL%>.s5 += (sampleStationX<%STATIONX%>P0.z * (-sampleStationY<%STATIONY%>P1.y)) + (sampleStationX<%STATIONX%>P0.w * sampleStationY<%STATIONY%>P1.x);\n";
-  compute_sTemplate[6] = "accumulator<%CELL%>.s6 += (sampleStationX<%STATIONX%>P0.z * sampleStationY<%STATIONY%>P1.z) - (sampleStationX<%STATIONX%>P0.w * (-sampleStationY<%STATIONY%>P1.w));\n";
-  compute_sTemplate[7] = "accumulator<%CELL%>.s7 += (sampleStationX<%STATIONX%>P0.z * (-sampleStationY<%STATIONY%>P1.w)) + (sampleStationX<%STATIONX%>P0.w * sampleStationY<%STATIONY%>P1.z);\n";
+  compute_sTemplate[0] = "accumulator<%CELL%>.s0 += (sampleStationX<%STATIONX%>.x * sampleStationY<%STATIONY%>.x) - (sampleStationX<%STATIONX%>.y * (-sampleStationY<%STATIONY%>.y));\n";
+  compute_sTemplate[1] = "accumulator<%CELL%>.s1 += (sampleStationX<%STATIONX%>.x * (-sampleStationY<%STATIONY%>.y)) + (sampleStationX<%STATIONX%>.y * sampleStationY<%STATIONY%>.x);\n";
+  compute_sTemplate[2] = "accumulator<%CELL%>.s2 += (sampleStationX<%STATIONX%>.x * sampleStationY<%STATIONY%>.z) - (sampleStationX<%STATIONX%>.y * (-sampleStationY<%STATIONY%>.w));\n";
+  compute_sTemplate[3] = "accumulator<%CELL%>.s3 += (sampleStationX<%STATIONX%>.x * (-sampleStationY<%STATIONY%>.w)) + (sampleStationX<%STATIONX%>.y * sampleStationY<%STATIONY%>.z);\n";
+  compute_sTemplate[4] = "accumulator<%CELL%>.s4 += (sampleStationX<%STATIONX%>.z * sampleStationY<%STATIONY%>.x) - (sampleStationX<%STATIONX%>.w * (-sampleStationY<%STATIONY%>.y));\n";
+  compute_sTemplate[5] = "accumulator<%CELL%>.s5 += (sampleStationX<%STATIONX%>.z * (-sampleStationY<%STATIONY%>.y)) + (sampleStationX<%STATIONX%>.w * sampleStationY<%STATIONY%>.x);\n";
+  compute_sTemplate[6] = "accumulator<%CELL%>.s6 += (sampleStationX<%STATIONX%>.z * sampleStationY<%STATIONY%>.z) - (sampleStationX<%STATIONX%>.w * (-sampleStationY<%STATIONY%>.w));\n";
+  compute_sTemplate[7] = "accumulator<%CELL%>.s7 += (sampleStationX<%STATIONX%>.z * (-sampleStationY<%STATIONY%>.w)) + (sampleStationX<%STATIONX%>.w * sampleStationY<%STATIONY%>.z);\n";
   std::string store_sTemplate = "output[(((((stationY + <%HEIGHT%>) * (stationY + <%HEIGHT%> + 1)) / 2) + stationX + <%WIDTH%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%CELL%>;\n";
   // End kernel's template
 
