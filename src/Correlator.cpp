@@ -211,7 +211,7 @@ std::string * getCorrelatorOpenCLParallelTime(const CorrelatorConf & conf, const
   compute_sTemplate[5] = "accumulator<%CELL%>.s5 += (sampleStationX<%STATIONX%>.z * (-sampleStationY<%STATIONY%>.y)) + (sampleStationX<%STATIONX%>.w * sampleStationY<%STATIONY%>.x);\n";
   compute_sTemplate[6] = "accumulator<%CELL%>.s6 += (sampleStationX<%STATIONX%>.z * sampleStationY<%STATIONY%>.z) - (sampleStationX<%STATIONX%>.w * (-sampleStationY<%STATIONY%>.w));\n";
   compute_sTemplate[7] = "accumulator<%CELL%>.s7 += (sampleStationX<%STATIONX%>.z * (-sampleStationY<%STATIONY%>.w)) + (sampleStationX<%STATIONX%>.w * sampleStationY<%STATIONY%>.z);\n";
-  std::string reduceLoad_sTemplate = "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getCellWidth() * conf.getCellHeight()) + ") + item + <%CELL_OFFSET%>] = accumulator<%CELL%>;\n";
+  std::string reduceLoad_sTemplate = "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getCellWidth() * conf.getCellHeight()) + ") + get_local_id(0) + <%CELL_OFFSET%>] = accumulator<%CELL%>;\n";
   std::string reduceCompute_sTemplate = "accumulator<%CELL%> += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getCellWidth() * conf.getCellHeight()) + ") + item + threshold + <%CELL_OFFSET%>];\n"
     "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getCellWidth() * conf.getCellHeight()) + ") + item + <%CELL_OFFSET%>] = accumulator<%CELL%>;\n";
   std::string store_sTemplate = "output[(((((baseStationY + <%HEIGHT%>) * (baseStationY + <%HEIGHT%> + 1)) / 2) + baseStationX + <%WIDTH%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%CELL%>;\n";
