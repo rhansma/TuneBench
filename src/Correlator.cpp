@@ -19,10 +19,10 @@
 
 namespace TuneBench {
 
-CorrelatorConf::CorrelatorConf() : isa::OpenCL::KernelConf(), width(1), height(1) {}
+CorrelatorConf::CorrelatorConf() : isa::OpenCL::KernelConf(), sequentialTime(true), parallelTime(false), width(1), height(1) {}
 
 std::string CorrelatorConf::print() const {
-  return std::to_string(width) + " " + std::to_string(height) + " " + isa::OpenCL::KernelConf::print();
+  return std::to_string(sequentialTime) + " " + std::to_string(parallelTime) + " " + std::to_string(width) + " " + std::to_string(height) + " " + isa::OpenCL::KernelConf::print();
 }
 
 std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {

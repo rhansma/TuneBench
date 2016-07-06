@@ -26,15 +26,21 @@ class CorrelatorConf : public isa::OpenCL::KernelConf {
 public:
   CorrelatorConf();
   // Get
+  inline bool getSequentialTime() const;
+  inline bool getParallelTime() const;
   inline unsigned int getCellWidth() const;
   inline unsigned int getCellHeight() const;
   // Set
+  inline void setSequentialTime(bool sequential);
+  inline void setParallelTime(bool parallel);
   inline void setCell(unsigned int width, unsigned int height);
   inline void setCellWidth(unsigned int width);
   inline void setCellHeight(unsigned int height);
   // utils
   std::string print() const;
 private:
+  bool sequentialTime;
+  bool parallelTime;
   unsigned int width;
   unsigned int height;
 };
@@ -47,12 +53,30 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
 unsigned int generateCellMap(const CorrelatorConf & conf, std::vector< unsigned int > & cellMapX, std::vector< unsigned int > & cellMapY, const unsigned int nrStations);
 
 // Implementations
+inline bool CorrelatorConf::getSequentialTime() const {
+  return sequentialTime;
+}
+
+inline bool CorrelatorConf::getParallelTime() const {
+  return parallelTime;
+}
+
 inline unsigned int CorrelatorConf::getCellWidth() const {
   return width;
 }
 
 inline unsigned int CorrelatorConf::getCellHeight() const {
   return height;
+}
+
+inline void CorrelatorConf::setSequentialTime(bool sequential) {
+  sequentialTime = sequential;
+  parallelTime = !sequential;
+}
+
+inline void CorrelatorConf::setParallelTime(bool parallel) {
+  parallelTime = parallel;
+  sequentialTime = !parallel;
 }
 
 inline void CorrelatorConf::setCell(unsigned int width, unsigned int height) {
