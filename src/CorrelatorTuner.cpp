@@ -124,7 +124,7 @@ int main(int argc, char * argv[]) {
             continue;
           }
           nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
-          if ( nrCells % conf.getNrThreadsD0() != 0 ) {
+          if ( conf.getSequentialTime() && (nrCells % conf.getNrThreadsD0() != 0) ) {
             continue;
           }
           for ( unsigned int items = 1; items <= maxItems; items++ ) {
