@@ -25,16 +25,6 @@ std::string CorrelatorConf::print() const {
   return std::to_string(sequentialTime) + " " + std::to_string(parallelTime) + " " + std::to_string(width) + " " + std::to_string(height) + " " + isa::OpenCL::KernelConf::print();
 }
 
-std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
-  if ( conf.getSequentialTime() ) {
-    return getCorrelatorOpenCLSequentialTime();
-  } else if ( conf.getParallelTime() ) {
-    return getCorrelatorOpenCLParallelTime();
-  } else {
-    return std::string();
-  }
-}
-
 std::string * getCorrelatorOpenCLSequentialTime(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
   std::string * code = new std::string();
 
@@ -355,6 +345,16 @@ std::string * getCorrelatorOpenCLParallelTime(const CorrelatorConf & conf, const
   delete store_s;
 
   return code;
+}
+
+std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
+  if ( conf.getSequentialTime() ) {
+    return getCorrelatorOpenCLSequentialTime();
+  } else if ( conf.getParallelTime() ) {
+    return getCorrelatorOpenCLParallelTime();
+  } else {
+    return std::string();
+  }
 }
 
 unsigned int generateCellMap(const CorrelatorConf & conf, std::vector< unsigned int > & cellMapX, std::vector< unsigned int > & cellMapY, const unsigned int nrStations) {
