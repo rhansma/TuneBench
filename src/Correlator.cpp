@@ -243,7 +243,7 @@ std::string * getCorrelatorOpenCLParallelTime(const CorrelatorConf & conf, const
   for ( unsigned int width = 0; width < conf.getCellWidth(); width++ ) {
     for ( unsigned int height = 0; height < conf.getCellHeight(); height++ ) {
       std::string cell_s = std::to_string(width) + std::to_string(height);
-      std::string cellOffset_s = std::to_string((width * conf.getCellHeight()) + height);
+      std::string cellOffset_s = std::to_string(((width * conf.getCellHeight()) + height) * conf.getNrThreadsD0());
       std::string width_s = std::to_string(width);
       std::string height_s = std::to_string(height);
 
