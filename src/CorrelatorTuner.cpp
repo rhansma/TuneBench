@@ -61,11 +61,13 @@ int main(int argc, char * argv[]) {
     vectorSize = args.getSwitchArgument< unsigned int >("-vector");
     maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
     maxItems = args.getSwitchArgument< unsigned int >("-max_items");
+    conf.setSequentialTime(args.getSwitch("-sequential_time"));
+    conf.setParallelTime(args.getSwitch("-parallel_time"));
     nrChannels = args.getSwitchArgument< unsigned int >("-channels");
     nrStations = args.getSwitchArgument< unsigned int >("-stations");
     nrSamples = args.getSwitchArgument< unsigned int >("-samples");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -padding ... -iterations ... -vector ... -max_threads ... -max_items ... -channels ... -stations ... -samples ..." << std::endl;
+    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -padding ... -iterations ... -vector ... -max_threads ... -max_items ... [-sequential_time | -parallel_time] -channels ... -stations ... -samples ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
@@ -126,9 +128,16 @@ int main(int argc, char * argv[]) {
             continue;
           }
           for ( unsigned int items = 1; items <= maxItems; items++ ) {
-            conf.setNrItemsD1(items);
-            if ( nrSamples % conf.getNrItemsD1() != 0 ) {
-              continue;
+            if ( conf.getSequentialTime() ) {
+              conf.setNrItemsD1(items);
+              if ( nrSamples % conf.getNrItemsD1() != 0 ) {
+                continue;
+              }
+            } else if ( conf.getParallelTime() ) {
+              conf.setNrItemsD0(items);
+              if ( nrSamples % conf.getNrItemsD0() != 0 ) {
+                continue;
+              }
             }
             // Generate kernel
             double gflops = isa::utils::giga(static_cast< uint64_t >(nrChannels) * nrSamples * nrCells * conf.getCellWidth() * conf.getCellHeight() * 32.0);
@@ -163,8 +172,14 @@ int main(int argc, char * argv[]) {
             }
             delete code;
 
-            cl::NDRange global = cl::NDRange(nrCells, 1, nrChannels);
-            cl::NDRange local = cl::NDRange(conf.getNrThreadsD0(), 1, conf.getNrThreadsD2());
+            cl::NDRange global, local;
+            if ( conf.getSequentialTime() ) {
+              global = cl::NDRange(nrCells, 1, nrChannels);
+              local = cl::NDRange(conf.getNrThreadsD0(), 1, conf.getNrThreadsD2());
+            } else if ( conf.getParallelTime() ) {
+              global = cl::NDRange(nrSamples / conf.getNrItemsD0(), nrCells, nrChannels);
+              local = cl::NDRange(conf.getNrThreadsD0(), 1, conf.getNrThreadsD2());
+            }
 
             kernel->setArg(0, input_d);
             kernel->setArg(1, output_d);
