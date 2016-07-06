@@ -135,7 +135,7 @@ int main(int argc, char * argv[]) {
               }
             } else if ( conf.getParallelTime() ) {
               conf.setNrItemsD0(items);
-              if ( nrSamples % conf.getNrItemsD0() != 0 ) {
+              if ( nrSamples % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
                 continue;
               }
             }
