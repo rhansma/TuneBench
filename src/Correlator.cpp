@@ -352,9 +352,8 @@ std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string
     return getCorrelatorOpenCLSequentialTime(conf, dataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
   } else if ( conf.getParallelTime() ) {
     return getCorrelatorOpenCLParallelTime(conf, dataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
-  } else {
-    return std::string();
   }
+  return new std::string();
 }
 
 unsigned int generateCellMap(const CorrelatorConf & conf, std::vector< unsigned int > & cellMapX, std::vector< unsigned int > & cellMapY, const unsigned int nrStations) {
