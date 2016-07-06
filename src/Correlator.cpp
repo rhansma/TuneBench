@@ -349,9 +349,9 @@ std::string * getCorrelatorOpenCLParallelTime(const CorrelatorConf & conf, const
 
 std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
   if ( conf.getSequentialTime() ) {
-    return getCorrelatorOpenCLSequentialTime();
+    return getCorrelatorOpenCLSequentialTime(conf, dataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
   } else if ( conf.getParallelTime() ) {
-    return getCorrelatorOpenCLParallelTime();
+    return getCorrelatorOpenCLParallelTime(conf, dataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
   } else {
     return std::string();
   }
