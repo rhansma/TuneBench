@@ -113,132 +113,123 @@ int main(int argc, char * argv[]) {
 
   for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
     conf.setNrThreadsD0(threads);
-    for ( unsigned int threads = 1; (conf.getNrThreadsD0() * threads) <= maxThreads; threads++ ) {
-      conf.setNrThreadsD2(threads);
-      if ( nrChannels % conf.getNrThreadsD2() != 0 ) {
-        continue;
-      }
-      for ( unsigned int width = 1; width <= maxItems; width++ ) {
-        conf.setCellWidth(width);
-        for ( unsigned int height = 1; height <= maxItems; height++ ) {
-          conf.setCellHeight(height);
-          if ( conf.getSequentialTime() && (5 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
-            continue;
-          } else if ( conf.getParallelTime() && (7 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
-            continue;
+    for ( unsigned int width = 1; width <= maxItems; width++ ) {
+      conf.setCellWidth(width);
+      for ( unsigned int height = 1; height <= maxItems; height++ ) {
+        conf.setCellHeight(height);
+        if ( conf.getSequentialTime() && (5 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
+          continue;
+        } else if ( conf.getParallelTime() && (7 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
+          continue;
+        }
+        nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
+        for ( unsigned int items = 1; items <= maxUnroll; items++ ) {
+          if ( conf.getSequentialTime() ) {
+            conf.setNrItemsD1(items);
+            if ( nrSamples % conf.getNrItemsD1() != 0 ) {
+              continue;
+            }
+          } else if ( conf.getParallelTime() ) {
+            conf.setNrItemsD0(items);
+            if ( nrSamples % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
+              continue;
+            }
           }
-          nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
-          for ( unsigned int items = 1; items <= maxUnroll; items++ ) {
-            if ( conf.getSequentialTime() ) {
-              conf.setNrItemsD1(items);
-              if ( nrSamples % conf.getNrItemsD1() != 0 ) {
-                continue;
-              }
-            } else if ( conf.getParallelTime() ) {
-              conf.setNrItemsD0(items);
-              if ( nrSamples % (conf.getNrThreadsD0() * conf.getNrItemsD0()) != 0 ) {
-                continue;
-              }
-            }
-            // Generate kernel
-            double gflops = isa::utils::giga(static_cast< uint64_t >(nrChannels) * nrSamples * nrCells * conf.getCellWidth() * conf.getCellHeight() * 32.0);
-            cl::Event clEvent;
-            cl::Kernel * kernel;
-            isa::utils::Timer timer;
-            std::string * code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations, nrCells);
+          // Generate kernel
+          double gflops = isa::utils::giga(static_cast< uint64_t >(nrChannels) * nrSamples * nrCells * conf.getCellWidth() * conf.getCellHeight() * 32.0);
+          cl::Event clEvent;
+          cl::Kernel * kernel;
+          isa::utils::Timer timer;
+          std::string * code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations, nrCells);
 
-            if ( reInit ) {
-              delete clQueues;
-              clQueues = new std::vector< std::vector< cl::CommandQueue > >();
-              isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
-              try {
-                initializeDeviceMemory(clContext, &(clQueues->at(clDeviceID)[0]), &input, &input_d, nrChannels * nrBaselines * nrPolarizations * nrPolarizations * 2, &output_d, nrCells, &cellMapX_d, &cellMapY_d);
-              } catch ( cl::Error & err ) {
-                return -1;
-              }
-              reInit = false;
-            }
+          if ( reInit ) {
+            delete clQueues;
+            clQueues = new std::vector< std::vector< cl::CommandQueue > >();
+            isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
             try {
-              kernel = isa::OpenCL::compile("correlator", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
-              (clQueues->at(clDeviceID)[0]).enqueueWriteBuffer(cellMapX_d, CL_FALSE, 0, cellMapX.size() * sizeof(unsigned int), reinterpret_cast< void * >(cellMapX.data()));
-              (clQueues->at(clDeviceID)[0]).enqueueWriteBuffer(cellMapY_d, CL_FALSE, 0, cellMapY.size() * sizeof(unsigned int), reinterpret_cast< void * >(cellMapY.data()));
-            } catch ( isa::OpenCL::OpenCLError & err ) {
-              std::cerr << err.what() << std::endl;
-              delete code;
-              break;
+              initializeDeviceMemory(clContext, &(clQueues->at(clDeviceID)[0]), &input, &input_d, nrChannels * nrBaselines * nrPolarizations * nrPolarizations * 2, &output_d, nrCells, &cellMapX_d, &cellMapY_d);
             } catch ( cl::Error & err ) {
-              std::cerr << err.what() << std::endl;
-              delete code;
-              break;
+              return -1;
             }
+            reInit = false;
+          }
+          try {
+            kernel = isa::OpenCL::compile("correlator", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
+            (clQueues->at(clDeviceID)[0]).enqueueWriteBuffer(cellMapX_d, CL_FALSE, 0, cellMapX.size() * sizeof(unsigned int), reinterpret_cast< void * >(cellMapX.data()));
+            (clQueues->at(clDeviceID)[0]).enqueueWriteBuffer(cellMapY_d, CL_FALSE, 0, cellMapY.size() * sizeof(unsigned int), reinterpret_cast< void * >(cellMapY.data()));
+          } catch ( isa::OpenCL::OpenCLError & err ) {
+            std::cerr << err.what() << std::endl;
             delete code;
+            break;
+          } catch ( cl::Error & err ) {
+            std::cerr << err.what() << std::endl;
+            delete code;
+            break;
+          }
+          delete code;
 
-            cl::NDRange global, local;
-            if ( conf.getSequentialTime() ) {
-              global = cl::NDRange(isa::utils::pad(nrCells, conf.getNrThreadsD0()), 1, nrChannels);
-              local = cl::NDRange(conf.getNrThreadsD0(), 1, conf.getNrThreadsD2());
-            } else if ( conf.getParallelTime() ) {
-              global = cl::NDRange(nrSamples / conf.getNrItemsD0(), nrCells, nrChannels);
-              local = cl::NDRange(conf.getNrThreadsD0(), 1, conf.getNrThreadsD2());
-            }
+          cl::NDRange global, local;
+          if ( conf.getSequentialTime() ) {
+            global = cl::NDRange(isa::utils::pad(nrCells, conf.getNrThreadsD0()), 1, nrChannels);
+            local = cl::NDRange(conf.getNrThreadsD0(), 1, 1);
+          } else if ( conf.getParallelTime() ) {
+            global = cl::NDRange(nrSamples / conf.getNrItemsD0(), nrCells, nrChannels);
+            local = cl::NDRange(conf.getNrThreadsD0(), 1, 1);
+          }
 
-            kernel->setArg(0, input_d);
-            kernel->setArg(1, output_d);
-            kernel->setArg(2, cellMapX_d);
-            kernel->setArg(3, cellMapY_d);
+          kernel->setArg(0, input_d);
+          kernel->setArg(1, output_d);
+          kernel->setArg(2, cellMapX_d);
+          kernel->setArg(3, cellMapY_d);
 
-            try {
-              // Warm-up run
-              clQueues->at(clDeviceID)[0].finish();
+          try {
+            // Warm-up run
+            clQueues->at(clDeviceID)[0].finish();
+            clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
+            clEvent.wait();
+            // Tuning runs
+            for ( unsigned int iteration = 0; iteration < nrIterations; iteration++ ) {
+              timer.start();
               clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
               clEvent.wait();
-              // Tuning runs
-              for ( unsigned int iteration = 0; iteration < nrIterations; iteration++ ) {
-                timer.start();
-                clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
-                clEvent.wait();
-                timer.stop();
-              }
-              clQueues->at(clDeviceID)[0].enqueueReadBuffer(output_d, CL_TRUE, 0, output.size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
-              clEvent.wait();
-            } catch ( cl::Error & err ) {
-              std::cerr << "OpenCL kernel execution error (";
-              std::cerr << conf.print();
-              std::cerr << "): ";
-              std::cerr << std::to_string(err.err()) << std::endl;
-              delete kernel;
-              if ( err.err() == -4 || err.err() == -61 ) {
-                return -1;
-              }
-              reInit = true;
-              break;
+              timer.stop();
             }
+            clQueues->at(clDeviceID)[0].enqueueReadBuffer(output_d, CL_TRUE, 0, output.size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
+            clEvent.wait();
+          } catch ( cl::Error & err ) {
+            std::cerr << "OpenCL kernel execution error (";
+            std::cerr << conf.print();
+            std::cerr << "): ";
+            std::cerr << std::to_string(err.err()) << std::endl;
             delete kernel;
+            if ( err.err() == -4 || err.err() == -61 ) {
+              return -1;
+            }
+            reInit = true;
+            break;
+          }
+          delete kernel;
 
-            bool error = false;
-            for ( unsigned int cell = 0; cell < nrCells; cell++ ) {
-              int stationX = cellMapX[cell];
-              int stationY = cellMapY[cell];
+          bool error = false;
+          for ( unsigned int cell = 0; cell < nrCells; cell++ ) {
+            int stationX = cellMapX[cell];
+            int stationY = cellMapY[cell];
 
-              for ( unsigned int width = 0; width < conf.getCellWidth(); width++ ) {
-                for ( unsigned int height = 0; height < conf.getCellHeight(); height++ ) {
-                  unsigned int baseline = (((stationY + height) * ((stationY + height) + 1)) / 2) + (stationX + width);
+            for ( unsigned int width = 0; width < conf.getCellWidth(); width++ ) {
+              for ( unsigned int height = 0; height < conf.getCellHeight(); height++ ) {
+                unsigned int baseline = (((stationY + height) * ((stationY + height) + 1)) / 2) + (stationX + width);
 
-                  for ( unsigned int channel = 0; channel < nrChannels; channel++ ) {
-                    for ( unsigned int polarization0 = 0; polarization0 < nrPolarizations; polarization0++ ) {
-                      for ( unsigned int polarization1 = 0; polarization1 < nrPolarizations; polarization1++ ) {
-                        if ( !isa::utils::same(output[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2)], output_c[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2)]) ) {
-                          std::cerr << "Output error (" << conf.print() << ")." << std::endl;
-                          error = true;
-                          break;
-                        }
-                        if ( !isa::utils::same(output[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2) + 1], output_c[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2) + 1]) ) {
-                          std::cerr << "Output error (" << conf.print() << ")." << std::endl;
-                          error = true;
-                          break;
-                        }
+                for ( unsigned int channel = 0; channel < nrChannels; channel++ ) {
+                  for ( unsigned int polarization0 = 0; polarization0 < nrPolarizations; polarization0++ ) {
+                    for ( unsigned int polarization1 = 0; polarization1 < nrPolarizations; polarization1++ ) {
+                      if ( !isa::utils::same(output[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2)], output_c[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2)]) ) {
+                        std::cerr << "Output error (" << conf.print() << ")." << std::endl;
+                        error = true;
+                        break;
                       }
-                      if ( error ) {
+                      if ( !isa::utils::same(output[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2) + 1], output_c[(baseline * nrChannels * nrPolarizations * nrPolarizations * 2) + (channel * nrPolarizations * nrPolarizations * 2) + (polarization0 * nrPolarizations * 2) + (polarization1 * 2) + 1]) ) {
+                        std::cerr << "Output error (" << conf.print() << ")." << std::endl;
+                        error = true;
                         break;
                       }
                     }
@@ -259,16 +250,19 @@ int main(int argc, char * argv[]) {
               }
             }
             if ( error ) {
-              continue;
+              break;
             }
-
-            std::cout << nrChannels << " " << nrStations << " " << nrSamples << " " << nrPolarizations << " " << nrBaselines << " " << nrCells << " ";
-            std::cout << conf.print() << " ";
-            std::cout << std::setprecision(3);
-            std::cout << gflops / timer.getAverageTime() << " ";
-            std::cout << std::setprecision(6);
-            std::cout << timer.getAverageTime() << " " << timer.getStandardDeviation() << " " << timer.getCoefficientOfVariation() << std::endl;
           }
+          if ( error ) {
+            continue;
+          }
+
+          std::cout << nrChannels << " " << nrStations << " " << nrSamples << " " << nrPolarizations << " " << nrBaselines << " " << nrCells << " ";
+          std::cout << conf.print() << " ";
+          std::cout << std::setprecision(3);
+          std::cout << gflops / timer.getAverageTime() << " ";
+          std::cout << std::setprecision(6);
+          std::cout << timer.getAverageTime() << " " << timer.getStandardDeviation() << " " << timer.getCoefficientOfVariation() << std::endl;
         }
       }
     }
