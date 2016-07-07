@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <vector>
 #include <iostream>
 
 #include <configuration.hpp>
@@ -21,10 +22,13 @@
 
 
 int main(int argc, char * argv[]) {
+  unsigned int padding = 0;
   unsigned int nrChannels = 0;
   unsigned int nrStations = 0;
   unsigned int nrSamples = 0;
-  unsigned int padding = 0;
+  unsigned int nrCells = 0;
+  std::vector< unsigned int > cellMapX;
+  std::vector< unsigned int > cellMapY;
   TuneBench::CorrelatorConf conf;
 
   try {
@@ -53,7 +57,8 @@ int main(int argc, char * argv[]) {
     return 1;
   }
 
-  std::string * code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
+  nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
+  std::string * code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations, nrCells);
   std::cout << std::endl;
   std::cout << *code << std::endl;
   std::cout << std::endl;

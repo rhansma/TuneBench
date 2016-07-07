@@ -25,12 +25,13 @@ std::string CorrelatorConf::print() const {
   return std::to_string(sequentialTime) + " " + std::to_string(parallelTime) + " " + std::to_string(width) + " " + std::to_string(height) + " " + isa::OpenCL::KernelConf::print();
 }
 
-std::string * getCorrelatorOpenCLSequentialTime(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
+std::string * getCorrelatorOpenCLSequentialTime(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations, const unsigned int nrCells) {
   std::string * code = new std::string();
 
   // Begin kernel's template
   *code = "__kernel void correlator(__global const " + dataName + "4 * const restrict input, __global " + dataName + "8 * const restrict output, __global const unsigned int * const restrict cellMapX, __global const unsigned int * const restrict cellMapY) {\n"
     "const unsigned int cell = (get_group_id(0) * " + std::to_string(conf.getNrThreadsD0()) + ") + get_local_id(0);\n"
+    "if ( cell < " + std::to_string(nrCells) + " ) {\n"
     "const unsigned int channel = (get_group_id(2) * " + std::to_string(conf.getNrThreadsD2()) + ") + get_local_id(2);\n"
     "const unsigned int baseStationX = cellMapX[cell];\n"
     "const unsigned int baseStationY = cellMapY[cell];\n"
@@ -42,6 +43,7 @@ std::string * getCorrelatorOpenCLSequentialTime(const CorrelatorConf & conf, con
     "<%LOAD_AND_COMPUTE%>"
     "}\n"
     "<%STORE%>"
+    "}\n"
     "}\n";
   std::string defineStationX_sTemplate = dataName + "4 sampleStationX<%STATION%> = (" + dataName + "4)(0.0);\n";
   std::string defineStationY_sTemplate = dataName + "4 sampleStationY<%STATION%> = (" + dataName + "4)(0.0);\n";
@@ -347,9 +349,9 @@ std::string * getCorrelatorOpenCLParallelTime(const CorrelatorConf & conf, const
   return code;
 }
 
-std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
+std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations, const unsigned int nrCells) {
   if ( conf.getSequentialTime() ) {
-    return getCorrelatorOpenCLSequentialTime(conf, dataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
+    return getCorrelatorOpenCLSequentialTime(conf, dataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations, nrCells);
   } else if ( conf.getParallelTime() ) {
     return getCorrelatorOpenCLParallelTime(conf, dataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
   }

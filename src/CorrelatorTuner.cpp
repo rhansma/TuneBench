@@ -120,7 +120,9 @@ int main(int argc, char * argv[]) {
         conf.setCellWidth(width);
         for ( unsigned int height = 1; height <= maxItems; height++ ) {
           conf.setCellHeight(height);
-          if ( (4 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
+          if ( conf.getSequentialTime() && (5 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
+            continue;
+          } else if ( conf.getParallelTime() && (7 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
             continue;
           }
           nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
@@ -144,7 +146,7 @@ int main(int argc, char * argv[]) {
             cl::Event clEvent;
             cl::Kernel * kernel;
             isa::utils::Timer timer;
-            std::string * code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
+            std::string * code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations, nrCells);
 
             if ( reInit ) {
               delete clQueues;
@@ -174,7 +176,7 @@ int main(int argc, char * argv[]) {
 
             cl::NDRange global, local;
             if ( conf.getSequentialTime() ) {
-              global = cl::NDRange(nrCells, 1, nrChannels);
+              global = cl::NDRange(isa::utils::pad(nrCells, conf.getNrThreadsD0()), 1, nrChannels);
               local = cl::NDRange(conf.getNrThreadsD0(), 1, conf.getNrThreadsD2());
             } else if ( conf.getParallelTime() ) {
               global = cl::NDRange(nrSamples / conf.getNrItemsD0(), nrCells, nrChannels);

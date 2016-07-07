@@ -48,7 +48,7 @@ private:
 // Sequential
 template< typename T > void correlator(const std::vector< T > & input, std::vector< T > & output, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations);
 // OpenCL
-std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations);
+std::string * getCorrelatorOpenCL(const CorrelatorConf & conf, const std::string & dataName, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations, const unsigned int nrCells);
 
 unsigned int generateCellMap(const CorrelatorConf & conf, std::vector< unsigned int > & cellMapX, std::vector< unsigned int > & cellMapY, const unsigned int nrStations);
 
