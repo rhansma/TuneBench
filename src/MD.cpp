@@ -55,12 +55,10 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
     + dataName + " force<%NUMD0%>x<%NUMD1%> = 0.0;\n";
   std::string loadPosition_sTemplate = "position<%NUMD0%> = input[(get_group_id(0) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0) + <%OFFSETD0%>];\n";
   std::string loadNeighbor_sTemplate = "neighbor<%NUMD1%> = input[neighbor + <%OFFSETD1%>];\n";
-  std::vector< std::string > compute_sTemplate(5);
+  std::vector< std::string > compute_sTemplate(3);
   compute_sTemplate[0] = "inverseDistance<%NUMD0%>x<%NUMD1%> = 1.0f / (((position<%NUMD0%>.x - neighbor<%NUMD1%>.x) * (position<%NUMD0%>.x - neighbor<%NUMD1%>.x)) + ((position<%NUMD0%>.y - neighbor<%NUMD1%>.y) * (position<%NUMD0%>.y - neighbor<%NUMD1%>.y)) + ((position<%NUMD0%>.z - neighbor<%NUMD1%>.z) * (position<%NUMD0%>.z - neighbor<%NUMD1%>.z)));\n";
   compute_sTemplate[1] =  "force<%NUMD0%>x<%NUMD1%> = (inverseDistance<%NUMD0%>x<%NUMD1%> * inverseDistance<%NUMD0%>x<%NUMD1%> * inverseDistance<%NUMD0%>x<%NUMD1%> * inverseDistance<%NUMD0%>x<%NUMD1%>) * ((" + LJ1_s + " * (inverseDistance<%NUMD0%>x<%NUMD1%> * inverseDistance<%NUMD0%>x<%NUMD1%> * inverseDistance<%NUMD0%>x<%NUMD1%>)) - " + LJ2_s + ");\n";
-  compute_sTemplate[2] = "accumulator<%NUMD0%>x<%NUMD1%>.x += (position<%NUMD0%>.x - neighbor<%NUMD1%>.x) * force<%NUMD0%>x<%NUMD1%>;\n";
-  compute_sTemplate[3] = "accumulator<%NUMD0%>x<%NUMD1%>.y += (position<%NUMD0%>.y - neighbor<%NUMD1%>.y) * force<%NUMD0%>x<%NUMD1%>;\n";
-  compute_sTemplate[4] = "accumulator<%NUMD0%>x<%NUMD1%>.z += (position<%NUMD0%>.z - neighbor<%NUMD1%>.z) * force<%NUMD0%>x<%NUMD1%>;\n";
+  compute_sTemplate[2] = "accumulator<%NUMD0%>x<%NUMD1%> += (position<%NUMD0%> - neighbor<%NUMD1%>) * force<%NUMD0%>x<%NUMD1%>;\n";
   std::string reduce_sTemplate = "accumulator<%NUMD0%>x0 += accumulator<%NUMD0%>x<%NUMD1%>;\n";
   std::string store_sTemplate = "output[(get_group_id(0) * " + std::to_string(conf.getNrThreadsD0() * conf.getNrItemsD0()) + ") + get_local_id(0) + <%OFFSETD0%>] = accumulator<%NUMD0%>x0;\n";
   // End kernel's code
@@ -116,7 +114,7 @@ std::string * getMDOpenCL(const isa::OpenCL::KernelConf & conf, const std::strin
     store_s->append(*temp);
     delete temp;
   }
-  for ( unsigned int computeStatement = 0; computeStatement < 5; computeStatement++ ) {
+  for ( unsigned int computeStatement = 0; computeStatement < compute_sTemplate.size(); computeStatement++ ) {
     std::string * temp = 0;
 
     for ( unsigned int d0 = 0; d0 < conf.getNrItemsD0(); d0++ ) {
