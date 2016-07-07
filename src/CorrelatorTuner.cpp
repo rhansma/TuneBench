@@ -42,6 +42,7 @@ int main(int argc, char * argv[]) {
   unsigned int vectorSize = 0;
   unsigned int maxThreads = 0;
   unsigned int maxItems = 0;
+  unsigned int maxUnroll = 0;
   // Scenario
   unsigned int nrChannels = 0;
   unsigned int nrStations = 0;
@@ -61,6 +62,7 @@ int main(int argc, char * argv[]) {
     vectorSize = args.getSwitchArgument< unsigned int >("-vector");
     maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
     maxItems = args.getSwitchArgument< unsigned int >("-max_items");
+    maxUnroll = args.getSwitchArgument< unsigned int >("-max_unroll");
     conf.setSequentialTime(args.getSwitch("-sequential_time"));
     conf.setParallelTime(args.getSwitch("-parallel_time"));
     nrChannels = args.getSwitchArgument< unsigned int >("-channels");
@@ -126,7 +128,7 @@ int main(int argc, char * argv[]) {
             continue;
           }
           nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
-          for ( unsigned int items = 1; items <= maxItems; items++ ) {
+          for ( unsigned int items = 1; items <= maxUnroll; items++ ) {
             if ( conf.getSequentialTime() ) {
               conf.setNrItemsD1(items);
               if ( nrSamples % conf.getNrItemsD1() != 0 ) {
