@@ -200,16 +200,12 @@ std::string * getCorrelatorOpenCLParallelTime(const CorrelatorConf & conf, const
   std::string defineCell_sTemplate = dataName + "8 accumulator<%CELL%> = (" + dataName + "8)(0.0);\n";
   std::string loadX_sTemplate = "sampleStationX<%STATION%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationX + <%WIDTH%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n";
   std::string loadY_sTemplate = "sampleStationY<%STATION%> = input[(channel * " + std::to_string(nrStations * isa::utils::pad(nrSamples, padding / 4)) + ") + ((baseStationY + <%HEIGHT%>) * " + std::to_string(isa::utils::pad(nrSamples, padding / 4)) + ") + (sample + <%OFFSETD0%>)];\n";
-  std::vector< std::string > compute_sTemplate(8);
+  std::vector< std::string > compute_sTemplate(4);
+  compute_sTemplate[0] = "accumulator<%CELL%>.s0246 += sampleStationX<%STATIONX%>.s0022 * sampleStationY<%STATIONY%>.s0202;\n";
+  compute_sTemplate[1] = "accumulator<%CELL%>.s0246 += sampleStationX<%STATIONX%>.s1133 * sampleStationY<%STATIONY%>.s1313;\n";
+  compute_sTemplate[2] = "accumulator<%CELL%>.s1357 += sampleStationX<%STATIONX%>.s1133 * sampleStationY<%STATIONY%>.s0202;\n";
+  compute_sTemplate[3] = "accumulator<%CELL%>.s1357 -= sampleStationX<%STATIONX%>.s0022 * sampleStationY<%STATIONY%>.s1313;\n";
   compute_sTemplate[0] = "accumulator<%CELL%>.s0 += (sampleStationX<%STATIONX%>.x * sampleStationY<%STATIONY%>.x) - (sampleStationX<%STATIONX%>.y * (-sampleStationY<%STATIONY%>.y));\n";
-  compute_sTemplate[1] = "accumulator<%CELL%>.s1 += (sampleStationX<%STATIONX%>.x * (-sampleStationY<%STATIONY%>.y)) + (sampleStationX<%STATIONX%>.y * sampleStationY<%STATIONY%>.x);\n";
-  compute_sTemplate[2] = "accumulator<%CELL%>.s2 += (sampleStationX<%STATIONX%>.x * sampleStationY<%STATIONY%>.z) - (sampleStationX<%STATIONX%>.y * (-sampleStationY<%STATIONY%>.w));\n";
-  compute_sTemplate[3] = "accumulator<%CELL%>.s3 += (sampleStationX<%STATIONX%>.x * (-sampleStationY<%STATIONY%>.w)) + (sampleStationX<%STATIONX%>.y * sampleStationY<%STATIONY%>.z);\n";
-  compute_sTemplate[4] = "accumulator<%CELL%>.s4 += (sampleStationX<%STATIONX%>.z * sampleStationY<%STATIONY%>.x) - (sampleStationX<%STATIONX%>.w * (-sampleStationY<%STATIONY%>.y));\n";
-  compute_sTemplate[5] = "accumulator<%CELL%>.s5 += (sampleStationX<%STATIONX%>.z * (-sampleStationY<%STATIONY%>.y)) + (sampleStationX<%STATIONX%>.w * sampleStationY<%STATIONY%>.x);\n";
-  compute_sTemplate[6] = "accumulator<%CELL%>.s6 += (sampleStationX<%STATIONX%>.z * sampleStationY<%STATIONY%>.z) - (sampleStationX<%STATIONX%>.w * (-sampleStationY<%STATIONY%>.w));\n";
-  compute_sTemplate[7] = "accumulator<%CELL%>.s7 += (sampleStationX<%STATIONX%>.z * (-sampleStationY<%STATIONY%>.w)) + (sampleStationX<%STATIONX%>.w * sampleStationY<%STATIONY%>.z);\n";
-  std::string reduceLoad_sTemplate = "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getCellWidth() * conf.getCellHeight()) + ") + get_local_id(0) + <%CELL_OFFSET%>] = accumulator<%CELL%>;\n";
   std::string reduceCompute_sTemplate = "accumulator<%CELL%> += buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getCellWidth() * conf.getCellHeight()) + ") + item + threshold + <%CELL_OFFSET%>];\n"
     "buffer[(get_local_id(2) * " + std::to_string(conf.getNrThreadsD0() * conf.getCellWidth() * conf.getCellHeight()) + ") + item + <%CELL_OFFSET%>] = accumulator<%CELL%>;\n";
   std::string store_sTemplate = "output[(((((baseStationY + <%HEIGHT%>) * (baseStationY + <%HEIGHT%> + 1)) / 2) + baseStationX + <%WIDTH%>) * " + std::to_string(nrChannels) + ") + channel] = accumulator<%CELL%>;\n";
@@ -311,7 +307,7 @@ std::string * getCorrelatorOpenCLParallelTime(const CorrelatorConf & conf, const
     } else {
       loadCompute_s = isa::utils::replace(loadCompute_s, "<%OFFSETD0%>", offsetD0_s, true);
     }
-    for ( unsigned int computeStatement = 0; computeStatement < 8; computeStatement++ ) {
+    for ( unsigned int computeStatement = 0; computeStatement < compute_sTemplate.size(); computeStatement++ ) {
       for ( unsigned int width = 0; width < conf.getCellWidth(); width++ ) {
         std::string width_s = std::to_string(width);
 
