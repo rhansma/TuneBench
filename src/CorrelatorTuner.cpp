@@ -33,7 +33,6 @@
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * input, cl::Buffer * input_d, const unsigned int outputSize, cl::Buffer * output_d, const unsigned int cellMapSize, cl::Buffer * cellMapX_d, cl::Buffer * cellMapY_d);
 
 int main(int argc, char * argv[]) {
-  bool reInit = true;
   unsigned int padding = 0;
   unsigned int nrIterations = 0;
   unsigned int clPlatformID = 0;
@@ -112,21 +111,21 @@ int main(int argc, char * argv[]) {
   std::cout << std::fixed << std::endl;
   std::cout << "# nrChannels nrStations nrSamples nrPolarizations nrBaselines nrCells *configuration* GFLOP/s time stdDeviation COV" << std::endl << std::endl;
 
-  for ( unsigned int threads = vectorSize; threads <= maxThreads; threads += vectorSize ) {
-    conf.setNrThreadsD0(threads);
-    for ( unsigned int width = 1; width <= maxItems; width++ ) {
-      conf.setCellWidth(width);
-      // Fix for NVIDIA memory, may be removed in the future
-      reInit = true;
-      // End of the fix
-      for ( unsigned int height = 1; height <= maxItems; height++ ) {
-        conf.setCellHeight(height);
-        if ( conf.getSequentialTime() && (5 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
-          continue;
-        } else if ( conf.getParallelTime() && (7 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
-          continue;
-        }
-        nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
+  for ( unsigned int width = 1; width <= maxItems; width++ ) {
+    // Fix for NVIDIA memory, may be removed in the future
+    bool reInit = true;
+    // End of the fix
+    conf.setCellWidth(width);
+    for ( unsigned int height = 1; height <= maxItems; height++ ) {
+      conf.setCellHeight(height);
+      if ( conf.getSequentialTime() && (5 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
+        continue;
+      } else if ( conf.getParallelTime() && (7 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
+        continue;
+      }
+      nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
+      for ( unsigned int threads = vectorSize; threads <= maxThreads && threads <= nrCells; threads += vectorSize ) {
+        conf.setNrThreadsD0(threads);
         for ( unsigned int items = 1; items <= maxUnroll; items++ ) {
           if ( conf.getSequentialTime() ) {
             conf.setNrItemsD1(items);
