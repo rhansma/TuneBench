@@ -64,7 +64,7 @@ inline bool CorrelatorConf::getParallelTime() const {
   return parallelTime;
 }
 
-inline bool CorrelatorConf::GetConstantMemory() const {
+inline bool CorrelatorConf::getConstantMemory() const {
   return constantMemory;
 }
 
