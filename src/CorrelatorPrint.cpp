@@ -40,7 +40,7 @@ int main(int argc, char * argv[]) {
     conf.setNrItemsD0(conf.getCellWidth() * conf.getCellHeight());
     conf.setSequentialTime(args.getSwitch("-sequential_time"));
     conf.setParallelTime(args.getSwitch("-parallel_time"));
-    conf.getConstantMemory(args.getSwitch("-constant_memory"));
+    conf.setConstantMemory(args.getSwitch("-constant_memory"));
     if ( conf.getSequentialTime() ) {
       conf.setNrItemsD1(args.getSwitchArgument< unsigned int >("-items_d1"));
     } else if ( conf.getParallelTime() ) {
