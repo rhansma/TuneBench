@@ -116,6 +116,9 @@ int main(int argc, char * argv[]) {
     conf.setNrThreadsD0(threads);
     for ( unsigned int width = 1; width <= maxItems; width++ ) {
       conf.setCellWidth(width);
+      // Fix for NVIDIA memory, may be removed in the future
+      reInit = true;
+      // End of the fix
       for ( unsigned int height = 1; height <= maxItems; height++ ) {
         conf.setCellHeight(height);
         if ( conf.getSequentialTime() && (5 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
