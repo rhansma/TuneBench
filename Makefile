@@ -10,7 +10,7 @@ CL_LIBS := -L"$(OPENCL_LIB)"
 
 CFLAGS := -std=c++11 -Wall
 ifneq ($(debug), 1)
-	CFLAGS += -O3 -g0
+	CFLAGS += -O3 -g0 -fopenmp
 else
 	CFLAGS += -O0 -g3
 endif

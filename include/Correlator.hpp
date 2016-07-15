@@ -104,6 +104,7 @@ inline void CorrelatorConf::setCellHeight(unsigned int height) {
 }
 
 template< typename T > void correlator(const std::vector< T > & input, std::vector< T > & output, const unsigned int padding, const unsigned int nrChannels, const unsigned int nrStations, const unsigned int nrSamples, const unsigned int nrPolarizations) {
+  #pragma omp parallel for
   for ( unsigned int channel = 0; channel < nrChannels; channel++ ) {
     for ( unsigned int station1 = 0; station1 < nrStations; station1++ ) {
       for ( unsigned int station0 = 0; station0 <= station1; station0++ ) {
@@ -131,6 +132,7 @@ template< typename T > void correlator(const std::vector< T > & input, std::vect
       }
     }
   }
+  // #pragma omp parallel for END
 }
 
 }; // TuneBench
