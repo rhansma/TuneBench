@@ -28,11 +28,13 @@ public:
   // Get
   inline bool getSequentialTime() const;
   inline bool getParallelTime() const;
+  inline bool getConstantMemory() const;
   inline unsigned int getCellWidth() const;
   inline unsigned int getCellHeight() const;
   // Set
   inline void setSequentialTime(bool sequential);
   inline void setParallelTime(bool parallel);
+  inline void setConstantMemory(bool constant);
   inline void setCell(unsigned int width, unsigned int height);
   inline void setCellWidth(unsigned int width);
   inline void setCellHeight(unsigned int height);
@@ -41,6 +43,7 @@ public:
 private:
   bool sequentialTime;
   bool parallelTime;
+  bool constantMemory;
   unsigned int width;
   unsigned int height;
 };
@@ -61,6 +64,10 @@ inline bool CorrelatorConf::getParallelTime() const {
   return parallelTime;
 }
 
+inline bool CorrelatorConf::GetConstantMemory() const {
+  return constantMemory;
+}
+
 inline unsigned int CorrelatorConf::getCellWidth() const {
   return width;
 }
@@ -77,6 +84,10 @@ inline void CorrelatorConf::setSequentialTime(bool sequential) {
 inline void CorrelatorConf::setParallelTime(bool parallel) {
   parallelTime = parallel;
   sequentialTime = !parallel;
+}
+
+inline void CorrelatorConf::setConstantMemory(bool constant) {
+  constantMemory = constant;
 }
 
 inline void CorrelatorConf::setCell(unsigned int width, unsigned int height) {

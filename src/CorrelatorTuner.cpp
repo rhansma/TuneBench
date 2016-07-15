@@ -38,6 +38,7 @@ int main(int argc, char * argv[]) {
   unsigned int nrIterations = 0;
   unsigned int clPlatformID = 0;
   unsigned int clDeviceID = 0;
+  unsigned int constantMemoryAmount = 0;
   // Constraints
   unsigned int vectorSize = 0;
   unsigned int maxThreads = 0;
@@ -140,12 +141,13 @@ int main(int argc, char * argv[]) {
           cl::Event clEvent;
           cl::Kernel * kernel;
           isa::utils::Timer timer;
-          std::string * code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations, nrCells);
+          std::string * code = 0;
 
           if ( reInit ) {
             delete clQueues;
             clQueues = new std::vector< std::vector< cl::CommandQueue > >();
             isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
+            clDevices->at(clDeviceID)::getInfo(CL_MAX_CONSTANT_BUFFER_SIZE, &constantMemoryAmount);
             try {
               initializeDeviceMemory(clContext, &(clQueues->at(clDeviceID)[0]), &input, &input_d, nrChannels * nrBaselines * nrPolarizations * nrPolarizations * 2, &output_d, nrCells, &cellMapX_d, &cellMapY_d);
             } catch ( cl::Error & err ) {
@@ -153,6 +155,12 @@ int main(int argc, char * argv[]) {
             }
             reInit = false;
           }
+          if ( (nrCells * 2 * sizeof(unsigned int)) < constantMemoryAmount ) {
+            conf.setConstantMemory(true);
+          } else {
+            conf.setConstantMemory(false);
+          }
+          code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations, nrCells);
           try {
             kernel = isa::OpenCL::compile("correlator", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
             (clQueues->at(clDeviceID)[0]).enqueueWriteBuffer(cellMapX_d, CL_FALSE, 0, cellMapX.size() * sizeof(unsigned int), reinterpret_cast< void * >(cellMapX.data()));

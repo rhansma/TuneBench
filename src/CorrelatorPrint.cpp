@@ -40,6 +40,7 @@ int main(int argc, char * argv[]) {
     conf.setNrItemsD0(conf.getCellWidth() * conf.getCellHeight());
     conf.setSequentialTime(args.getSwitch("-sequential_time"));
     conf.setParallelTime(args.getSwitch("-parallel_time"));
+    conf.getConstantMemory(args.getSwitch("-constant_memory"));
     if ( conf.getSequentialTime() ) {
       conf.setNrItemsD1(args.getSwitchArgument< unsigned int >("-items_d1"));
     } else if ( conf.getParallelTime() ) {
@@ -50,7 +51,7 @@ int main(int argc, char * argv[]) {
     nrSamples = args.getSwitchArgument< unsigned int >("-samples");
     padding = args.getSwitchArgument< unsigned int >("-padding");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " [-sequential_time | -parallel_time] -threads_d0 ... -threads_d2 ... -width ... -height ... [-items_d1 ... | -items_d0 ...] -channels ... -stations ... -samples ... -padding ..." << std::endl;
+    std::cerr << argv[0] << " [-sequential_time | -parallel_time] [-constant_memory] -threads_d0 ... -threads_d2 ... -width ... -height ... [-items_d1 ... | -items_d0 ...] -channels ... -stations ... -samples ... -padding ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
