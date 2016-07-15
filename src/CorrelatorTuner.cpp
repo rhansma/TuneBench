@@ -165,6 +165,7 @@ int main(int argc, char * argv[]) {
             kernel = isa::OpenCL::compile("correlator", *code, "-cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
             (clQueues->at(clDeviceID)[0]).enqueueWriteBuffer(cellMapX_d, CL_FALSE, 0, cellMapX.size() * sizeof(unsigned int), reinterpret_cast< void * >(cellMapX.data()));
             (clQueues->at(clDeviceID)[0]).enqueueWriteBuffer(cellMapY_d, CL_FALSE, 0, cellMapY.size() * sizeof(unsigned int), reinterpret_cast< void * >(cellMapY.data()));
+            (clQueues->at(clDeviceID)[0]).finish();
           } catch ( isa::OpenCL::OpenCLError & err ) {
             std::cerr << err.what() << std::endl;
             delete code;
@@ -172,6 +173,7 @@ int main(int argc, char * argv[]) {
           } catch ( cl::Error & err ) {
             std::cerr << err.what() << std::endl;
             delete code;
+            reInit = true;
             break;
           }
           delete code;
