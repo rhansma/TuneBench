@@ -147,7 +147,7 @@ int main(int argc, char * argv[]) {
             delete clQueues;
             clQueues = new std::vector< std::vector< cl::CommandQueue > >();
             isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
-            clDevices->at(clDeviceID)::getInfo< cl_ulong >(CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE, &constantMemoryAmount);
+            (clDevices->at(clDeviceID)).getInfo< cl_ulong >(CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE, &constantMemoryAmount);
             try {
               initializeDeviceMemory(clContext, &(clQueues->at(clDeviceID)[0]), &input, &input_d, nrChannels * nrBaselines * nrPolarizations * nrPolarizations * 2, &output_d, nrCells, &cellMapX_d, &cellMapY_d);
             } catch ( cl::Error & err ) {
