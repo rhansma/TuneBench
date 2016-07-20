@@ -33,6 +33,8 @@
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * input, cl::Buffer * input_d, const unsigned int outputSize, cl::Buffer * output_d, const unsigned int cellMapSize, cl::Buffer * cellMapX_d, cl::Buffer * cellMapY_d);
 
 int main(int argc, char * argv[]) {
+  bool reInit = true;
+  bool nvidia = false;
   unsigned int padding = 0;
   unsigned int nrIterations = 0;
   unsigned int clPlatformID = 0;
@@ -55,6 +57,7 @@ int main(int argc, char * argv[]) {
   try {
     isa::utils::ArgumentList args(argc, argv);
 
+    nvidia = args.getSwitch("-nvidia");
     clPlatformID = args.getSwitchArgument< unsigned int >("-opencl_platform");
     clDeviceID = args.getSwitchArgument< unsigned int >("-opencl_device");
     padding = args.getSwitchArgument< unsigned int >("-padding");
@@ -69,7 +72,7 @@ int main(int argc, char * argv[]) {
     nrStations = args.getSwitchArgument< unsigned int >("-stations");
     nrSamples = args.getSwitchArgument< unsigned int >("-samples");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -padding ... -iterations ... -vector ... -max_threads ... -max_items ... -max_unroll ... [-sequential_time | -parallel_time] -channels ... -stations ... -samples ..." << std::endl;
+    std::cerr << argv[0] << " [-nvidia] -opencl_platform ... -opencl_device ... -padding ... -iterations ... -vector ... -max_threads ... -max_items ... -max_unroll ... [-sequential_time | -parallel_time] -channels ... -stations ... -samples ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
@@ -113,7 +116,9 @@ int main(int argc, char * argv[]) {
 
   for ( unsigned int width = 1; width <= maxItems; width++ ) {
     // Fix for NVIDIA memory, may be removed in the future
-    bool reInit = true;
+    if ( nvidia ) {
+      reInit = true;
+    }
     // End of the fix
     conf.setCellWidth(width);
     for ( unsigned int height = 1; height <= maxItems; height++ ) {
