@@ -86,6 +86,7 @@ def get_tuning_variability(db_queue, tables, benchmark, scenarios):
     elif benchmark.lower() == "md":
         metrics = "GFLOPs,"
     elif benchmark.lower() == "correlator":
+        extra = "sequentialTime,parallelTime,constantMemory,width,height,"
         metrics = "GFLOPs,"
     parameters = list()
     for table in tables:
@@ -101,6 +102,8 @@ def get_tuning_variability(db_queue, tables, benchmark, scenarios):
                     parameters[item].append(best[0][item])
     results = list()
     for parameter in parameters:
-        results.append(statistics.stdev(parameter) / statistics.mean(parameter))
+        if statistics.mean(parameter) == 0:
+            results.append(0.0)
+        else:
+            results.append(statistics.stdev(parameter) / statistics.mean(parameter))
     return results
-
