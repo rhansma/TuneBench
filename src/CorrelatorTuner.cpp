@@ -105,17 +105,17 @@ int main(int argc, char * argv[]) {
       }
     }
   }
-  // Compute CPU control results
-  std::fill(output.begin(), output.end(), 0);
-  std::fill(output_c.begin(), output_c.end(), 0);
-  TuneBench::correlator(input, output_c, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
-
   if ( conf.getSequentialTime() && (5 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
     return 1;
   } else if ( conf.getParallelTime() && (7 + (4 * (conf.getCellWidth() + conf.getCellHeight())) + (8 * (conf.getCellWidth() * conf.getCellHeight()))) > maxItems ) {
     return 1;
   }
   nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
+
+  // Compute CPU control results
+  std::fill(output.begin(), output.end(), 0);
+  std::fill(output_c.begin(), output_c.end(), 0);
+  TuneBench::correlator(input, output_c, padding, nrChannels, nrStations, nrSamples, nrPolarizations);
 
   std::cout << std::fixed << std::endl;
   std::cout << "# nrChannels nrStations nrSamples nrPolarizations nrBaselines nrCells *configuration* GFLOP/s time stdDeviation COV" << std::endl << std::endl;
