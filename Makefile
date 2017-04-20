@@ -1,11 +1,14 @@
 
 # https://github.com/isazi/utils
-UTILS := $(HOME)/src/utils
+UTILS := $(HOME)/git/scriptie/utils
 # https://github.com/isazi/OpenCL
-OPENCL := $(HOME)/src/OpenCL
+OPENCL := $(HOME)/git/scriptie/OpenCL
+
+OPENCL_HEADERS := $(HOME)/git/OpenCL-CLHPP/build/include
+OPENCL_HEADERS2 := $(HOME)/NVIDIASDK/OpenCL/common/inc
 
 INCLUDES := -I"include" -I"$(UTILS)/include"
-CL_INCLUDES := $(INCLUDES) -I"$(OPENCL)/include"
+CL_INCLUDES := $(INCLUDES) -I"$(OPENCL)/include" -I"$(OPENCL_HEADERS)" -I"$(OPENCL_HEADERS2)"
 CL_LIBS := -L"$(OPENCL_LIB)"
 
 CFLAGS := -std=c++11 -Wall
@@ -25,7 +28,7 @@ DEPS := $(UTILS)/bin/ArgumentList.o $(UTILS)/bin/Timer.o $(UTILS)/bin/utils.o
 CL_DEPS := $(DEPS) $(OPENCL)/bin/Exceptions.o $(OPENCL)/bin/InitializeOpenCL.o $(OPENCL)/bin/Kernel.o 
 
 
-all: bin/Reduction.o bin/ReductionTuner bin/ReductionPrint bin/Stencil.o bin/StencilTuner bin/StencilPrint bin/MD.o bin/MDTuner bin/MDPrint bin/Triad.o bin/TriadTuner bin/TriadPrint bin/Correlator.o bin/CorrelatorPrint bin/CorrelatorTuner
+all: bin/Reduction.o bin/ReductionTuner bin/ReductionPrint bin/Stencil.o bin/StencilTuner bin/StencilPrint bin/MD.o bin/MDTuner bin/MDPrint bin/Triad.o bin/TriadTuner bin/TriadPrint bin/Correlator.o bin/CorrelatorPrint bin/CorrelatorTuner bin/BlackScholes.o bin/BlackScholesPrint bin/BlackScholesTuner
 
 bin/Reduction.o: $(UTILS)/bin/utils.o include/Reduction.hpp src/Reduction.cpp
 	$(CC) -o bin/Reduction.o -c src/Reduction.cpp $(CL_INCLUDES) $(CFLAGS)
@@ -71,6 +74,15 @@ bin/CorrelatorPrint: $(CL_DEPS) bin/Correlator.o include/configuration.hpp src/C
 
 bin/CorrelatorTuner: $(CL_DEPS) bin/Correlator.o include/configuration.hpp src/CorrelatorTuner.cpp
 	$(CC) -o bin/CorrelatorTuner src/CorrelatorTuner.cpp bin/Correlator.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
+bin/BlackScholes.o: $(UTILS)/bin/utils.o include/BlackScholes.hpp src/BlackScholes.cpp
+	$(CC) -o bin/BlackScholes.o -c src/BlackScholes.cpp $(CL_INCLUDES) $(CFLAGS)
+
+bin/BlackScholesPrint: $(CL_DEPS) bin/BlackScholes.o include/configuration.hpp src/BlackScholesPrint.cpp
+	$(CC) -o bin/BlackScholesPrint src/BlackScholesPrint.cpp bin/BlackScholes.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
+
+bin/BlackScholesTuner: $(CL_DEPS) bin/BlackScholes.o include/configuration.hpp src/BlackScholesTuner.cpp
+	$(CC) -o bin/BlackScholesTuner src/BlackScholesTuner.cpp bin/BlackScholes.o $(CL_DEPS) $(CL_INCLUDES) $(CL_LIBS) $(CL_LDFLAGS) $(CFLAGS)
 
 clean:
 	-@rm bin/*
