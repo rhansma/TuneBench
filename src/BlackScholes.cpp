@@ -19,7 +19,8 @@ namespace TuneBench {
     BlackScholesConf::BlackScholesConf() : isa::OpenCL::KernelConf(), nrItemsPerBlock(1), vector(1) {}
 
     std::string BlackScholesConf::print() const {
-      return isa::utils::toString(nrItemsPerBlock) + " " + isa::utils::toString(vector) + " " + isa::OpenCL::KernelConf::print();
+      return isa::OpenCL::KernelConf::print();
+      //return isa::utils::toString(nrItemsPerBlock) + ";" + isa::utils::toString(vector) + ";" + isa::OpenCL::KernelConf::print();
     }
 
     std::string * getBlackScholesOpenCL(const BlackScholesConf & conf, const std::string & inputDataName, const std::string & outputDataName) {
