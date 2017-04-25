@@ -116,7 +116,7 @@ int main(int argc, char * argv[]) {
       return -1;
     }
     try {
-      kernel = isa::OpenCL::compile("BlackScholes", *code, "-cl-fast-relaxed-math -cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
+      kernel = isa::OpenCL::compile("BlackScholes", *code, "-cl-fast-relaxed-math -Werror", clContext, clDevices->at(clDeviceID));
     } catch ( isa::OpenCL::OpenCLError & err ) {
       std::cerr << err.what() << std::endl;
       delete code;
