@@ -23,20 +23,17 @@
 int main(int argc, char * argv[]) {
   TuneBench::BlackScholesConf conf;
 
-  /*try {
+  try {
     isa::utils::ArgumentList args(argc, argv);
 
-    conf.setNrThreadsD0(args.getSwitchArgument< unsigned int >("-threads_d0"));
-    conf.setNrItemsD0(args.getSwitchArgument< unsigned int >("-items_d0"));
-    conf.setNrItemsPerBlock(args.getSwitchArgument< unsigned int >("-items_per_block"));
-    conf.setVector(args.getSwitchArgument< unsigned int >("-vector"));
+    conf.setLoopUnrolling(args.getSwitchArgument< bool >("-loop_unrolling"));
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -threads_d0 ... -items_d0 ... -items_per_block ... -vector ..." << std::endl;
+    std::cerr << argv[0] << " -loop_unrolling ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
     return 1;
-  }*/
+  }
 
   std::string * code = TuneBench::getBlackScholesOpenCL(conf, inputDataName, outputDataName);
 

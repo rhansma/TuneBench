@@ -34,14 +34,17 @@ namespace TuneBench {
         // Get
         inline unsigned int getNrItemsPerBlock() const;
         inline unsigned int getVector() const;
+        inline bool getLoopUnrolling() const;
         // Set
         inline void setNrItemsPerBlock(unsigned int items);
         inline void setVector(unsigned int vector);
+        inline void setLoopUnrolling(bool unroll);
         // utils
         std::string print() const;
     private:
         unsigned int nrItemsPerBlock;
         unsigned int vector;
+        bool loopUnrolling;
     };
 
     std::string * getBlackScholesOpenCL(const BlackScholesConf & conf, const std::string & inputDataName, const std::string & outputDataName);
@@ -56,12 +59,20 @@ namespace TuneBench {
       return vector;
     }
 
+    inline bool BlackScholesConf::getLoopUnrolling() const {
+      return loopUnrolling;
+    }
+
     inline void BlackScholesConf::setNrItemsPerBlock(unsigned int items) {
       nrItemsPerBlock = items;
     }
 
     inline void BlackScholesConf::setVector(unsigned int vector) {
       this->vector = vector;
+    }
+
+    inline void BlackScholesConf::setLoopUnrolling(bool unroll) {
+      loopUnrolling = unroll;
     }
 
 } // TuneBench

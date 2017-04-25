@@ -54,6 +54,7 @@ int main(int argc, char * argv[]) {
   unsigned int maxItems = 0;
   unsigned int maxVector = 0;
   unsigned int inputSize = 0;
+  bool loopUnrolling = false;
   TuneBench::BlackScholesConf conf;
 
   try {
@@ -64,8 +65,9 @@ int main(int argc, char * argv[]) {
     nrIterations = args.getSwitchArgument< unsigned int >("-iterations");
     inputSize = args.getSwitchArgument< unsigned int >("-input_size");
     maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
+    loopUnrolling = args.getSwitchArgument< bool >("-loop_unrolling");
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -input_size ... -max_threads ..." << std::endl;
+    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -input_size ... -max_threads ... --loop_unrolling ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;
@@ -92,6 +94,7 @@ int main(int argc, char * argv[]) {
   std::cout << std::fixed << std::endl;
   std::cout << "inputSize outputSize *configuration* GB/s time stdDeviation COV" << std::endl << std::endl;
 
+  conf.setLoopUnrolling(loopUnrolling);
   for(unsigned int threads = 2; threads <= maxThreads; threads *= 2) {
     conf.setNrThreadsD0(threads);
 
@@ -113,8 +116,7 @@ int main(int argc, char * argv[]) {
       return -1;
     }
     try {
-      //todo: check why this parameter is used: -cl-fast-relaxed-math
-      kernel = isa::OpenCL::compile("BlackScholes", *code, "-cl-fast-relaxed-math -Werror", clContext, clDevices->at(clDeviceID));
+      kernel = isa::OpenCL::compile("BlackScholes", *code, "-cl-fast-relaxed-math -cl-mad-enable -Werror", clContext, clDevices->at(clDeviceID));
     } catch ( isa::OpenCL::OpenCLError & err ) {
       std::cerr << err.what() << std::endl;
       delete code;

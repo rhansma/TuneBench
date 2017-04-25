@@ -88,6 +88,8 @@ __kernel void BlackScholes(
     float V,                //Stock volatility
     unsigned int optN
 ){
+
+  <%LOOP_UNROLL%>
   for(unsigned int opt = get_global_id(0); opt < optN; opt += get_global_size(0))
     BlackScholesBody(
         &d_Call[opt],

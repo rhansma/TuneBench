@@ -38,6 +38,15 @@ namespace TuneBench {
       buffer << t.rdbuf();
 
       code->assign(buffer.str());
+
+      if(conf.getLoopUnrolling() == 1) {
+        std::string pragma_s("#pragma unroll");
+        code = isa::utils::replace(code, "<%LOOP_UNROLL%>", pragma_s);
+      } else {
+        std::string empty_s("");
+        code = isa::utils::replace(code, "<%LOOP_UNROLL%>", empty_s);
+      }
+
       // End kernel's template
 
       return code;
