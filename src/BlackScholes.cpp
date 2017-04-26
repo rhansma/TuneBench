@@ -33,7 +33,7 @@ namespace TuneBench {
         vectorDataName = inputDataName + std::to_string(conf.getVector());
       }
       // Begin kernel's template
-      std::ifstream t("src/BlackScholes.cl");
+      std::ifstream t("src/CL/BlackScholes.cl");
       std::stringstream buffer;
       buffer << t.rdbuf();
 

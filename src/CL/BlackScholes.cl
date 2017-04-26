@@ -54,10 +54,10 @@ __kernel void BlackScholes(
     if(d1 > 0)
       CNDD1 = 1.0f - CNDD1;
 
-    K = 1.0f / (1.0f + 0.2316419f * fabs(d2));
+    float K2 = 1.0f / (1.0f + 0.2316419f * fabs(d2));
 
     float CNDD2 = RSQRT2PI * EXP(- 0.5f * d2 * d2) *
-                  (K * (A1 + K * (A2 + K * (A3 + K * (A4 + K * A5)))));
+                  (K2 * (A1 + K2 * (A2 + K2 * (A3 + K2 * (A4 + K2 * A5)))));
 
     if(d2 > 0)
       CNDD2 = 1.0f - CNDD2;
