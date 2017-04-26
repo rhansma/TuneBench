@@ -27,8 +27,10 @@ int main(int argc, char * argv[]) {
     isa::utils::ArgumentList args(argc, argv);
 
     conf.setLoopUnrolling(args.getSwitchArgument< bool >("-loop_unrolling"));
+    conf.setInputSize(args.getSwitchArgument< int >("-input_size"));
+    conf.setNrThreadsD0(args.getSwitchArgument< bool >("-threads_d0"));
   } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -loop_unrolling ..." << std::endl;
+    std::cerr << argv[0] << " -loop_unrolling ... -input_size ... --threads_d0 ..." << std::endl;
     return 1;
   } catch ( std::exception & err ) {
     std::cerr << err.what() << std::endl;

@@ -37,34 +37,4 @@ __kernel void BlackScholes(
   const float RSQRT2PI = 0.39894228040143267793994605993438f;
 
   <%LOOP_UNROLL%>
-  for(unsigned int opt = get_global_id(0); opt < optN; opt += get_global_size(0)) {
-    float S = d_S[opt];
-    float X = d_X[opt];
-    float T = d_T[opt];
-
-    float sqrtT = SQRT(T);
-    float    d1 = (LOG(S / X) + (R + 0.5f * V * V) * T) / (V * sqrtT);
-    float    d2 = d1 - V * sqrtT;
-    float
-        K = 1.0f / (1.0f + 0.2316419f * fabs(d1));
-
-    float CNDD1 = RSQRT2PI * EXP(- 0.5f * d1 * d1) *
-              (K * (A1 + K * (A2 + K * (A3 + K * (A4 + K * A5)))));
-
-    if(d1 > 0)
-      CNDD1 = 1.0f - CNDD1;
-
-    float K2 = 1.0f / (1.0f + 0.2316419f * fabs(d2));
-
-    float CNDD2 = RSQRT2PI * EXP(- 0.5f * d2 * d2) *
-                  (K2 * (A1 + K2 * (A2 + K2 * (A3 + K2 * (A4 + K2 * A5)))));
-
-    if(d2 > 0)
-      CNDD2 = 1.0f - CNDD2;
-
-    //Calculate Call and Put simultaneously
-    float expRT = EXP(- R * T);
-    d_Call[opt] = (S * CNDD1 - X * expRT * CNDD2);
-    d_Put[opt]  = (X * expRT * (1.0f - CNDD2) - S * (1.0f - CNDD1));
-  }
 }

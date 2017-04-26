@@ -83,6 +83,7 @@ int main(int argc, char * argv[]) {
   std::vector< inputDataType > call(inputSize), put(inputSize), S(inputSize), X(inputSize), T(inputSize);
   cl::Buffer call_d, put_d, S_d, X_d, T_d;
 
+  conf.setInputSize(inputSize);
   /* Fill the input vectors */
   srand(2009);
   for(unsigned int i = 0; i < inputSize; i++){
