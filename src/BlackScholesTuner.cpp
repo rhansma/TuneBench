@@ -54,7 +54,7 @@ int main(int argc, char * argv[]) {
   unsigned int maxItems = 0;
   unsigned int maxVector = 0;
   unsigned int inputSize = 0;
-  bool loopUnrolling = false;
+  unsigned int loopUnrolling = 0;
   TuneBench::BlackScholesConf conf;
 
   try {
@@ -65,7 +65,7 @@ int main(int argc, char * argv[]) {
     nrIterations = args.getSwitchArgument< unsigned int >("-iterations");
     inputSize = args.getSwitchArgument< unsigned int >("-input_size");
     maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
-    loopUnrolling = args.getSwitchArgument< bool >("-loop_unrolling");
+    loopUnrolling = args.getSwitchArgument< unsigned int >("-loop_unrolling");
   } catch ( isa::utils::EmptyCommandLine & err ) {
     std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -input_size ... -max_threads ... --loop_unrolling ..." << std::endl;
     return 1;
@@ -95,95 +95,98 @@ int main(int argc, char * argv[]) {
   std::cout << std::fixed << std::endl;
   std::cout << "inputSize outputSize *configuration* GB/s time stdDeviation COV" << std::endl << std::endl;
 
-  conf.setLoopUnrolling(loopUnrolling);
-  for(unsigned int threads = 2; threads <= maxThreads; threads *= 2) {
-    conf.setNrThreadsD0(threads);
+  for(unsigned int unroll = 0; unroll <= loopUnrolling; unroll++) {
+    conf.setLoopUnrolling(unroll);
+    std::cout << std::endl;
+    for(unsigned int threads = 2; threads <= maxThreads; threads *= 2) {
+      conf.setNrThreadsD0(threads);
 
-    // Generate kernel
-    unsigned int outputSize = inputSize;
-    double gbytes = isa::utils::giga((static_cast< uint64_t >(inputSize) * sizeof(inputDataType)) + (static_cast< uint64_t >(outputSize) * sizeof(outputDataType)));
-    std::vector< outputDataType > output(outputSize);
-    cl::Event clEvent;
-    cl::Kernel * kernel;
-    isa::utils::Timer timer;
-    std::string * code = TuneBench::getBlackScholesOpenCL(conf, inputDataName, outputDataName);
+      // Generate kernel
+      unsigned int outputSize = inputSize;
+      double gbytes = isa::utils::giga((static_cast< uint64_t >(inputSize) * sizeof(inputDataType)) + (static_cast< uint64_t >(outputSize) * sizeof(outputDataType)));
+      std::vector< outputDataType > output(outputSize);
+      cl::Event clEvent;
+      cl::Kernel * kernel;
+      isa::utils::Timer timer;
+      std::string * code = TuneBench::getBlackScholesOpenCL(conf, inputDataName, outputDataName);
 
-    delete clQueues;
-    clQueues = new std::vector< std::vector< cl::CommandQueue > >();
-    isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
-    try {
-      initializeDeviceMemory(clContext, &(clQueues->at(clDeviceID)[0]), &S, &X, &T, &S_d, &X_d, &T_d, &call_d, &put_d, outputSize);
-    } catch ( cl::Error & err ) {
-      return -1;
-    }
-    try {
-      kernel = isa::OpenCL::compile("BlackScholes", *code, "-cl-fast-relaxed-math -Werror", clContext, clDevices->at(clDeviceID));
-    } catch ( isa::OpenCL::OpenCLError & err ) {
-      std::cerr << err.what() << std::endl;
-      delete code;
-      return -2;
-    }
-    delete code;
-
-
-    cl::NDRange global(conf.getNrThreadsD0() * 480); // 60 * 1024
-    cl::NDRange local(conf.getNrThreadsD0());
-
-    kernel->setArg(0, call_d);
-    kernel->setArg(1, put_d);
-    kernel->setArg(2, S_d);
-    kernel->setArg(3, X_d);
-    kernel->setArg(4, T_d);
-    kernel->setArg(5, R);
-    kernel->setArg(6, V);
-    kernel->setArg(7, inputSize);
-
-    try {
-      // Warm-up run
-      clQueues->at(clDeviceID)[0].finish();
-      clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
-      clEvent.wait();
-      // Tuning runs
-      for ( unsigned int iteration = 0; iteration < nrIterations; iteration++ ) {
-        timer.start();
-        clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
-        clEvent.wait();
-        timer.stop();
-      }
-      //clQueues->at(clDeviceID)[0].enqueueReadBuffer(call_d, CL_TRUE, 0, output.size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
-      clEvent.wait();
-    } catch ( cl::Error & err ) {
-      std::cerr << "OpenCL kernel execution error (" << inputSize << ", " << outputSize << "), (";
-      std::cerr << conf.print();
-      std::cerr << "), (";
-      std::cerr << isa::utils::toString(conf.getNrThreadsD0() * (inputSize / conf.getNrItemsPerBlock() / conf.getVector())) << "): ";
-      std::cerr << isa::utils::toString(err.err()) << std::endl;
-      delete kernel;
-      if ( err.err() == -4 || err.err() == -61 ) {
+      delete clQueues;
+      clQueues = new std::vector< std::vector< cl::CommandQueue > >();
+      isa::OpenCL::initializeOpenCL(clPlatformID, 1, clPlatforms, &clContext, clDevices, clQueues);
+      try {
+        initializeDeviceMemory(clContext, &(clQueues->at(clDeviceID)[0]), &S, &X, &T, &S_d, &X_d, &T_d, &call_d, &put_d, outputSize);
+      } catch ( cl::Error & err ) {
         return -1;
       }
-      return -2;
-    }
-    delete kernel;
-
-    /*bool error = false;
-    for ( auto item = output.begin(); item != output.end(); ++item ) {
-      if ( !isa::utils::same(*item, (magicValue * (inputSize / outputSize))) ) {
-        std::cerr << "Output error (" << inputSize << ", " << outputSize << ") (" << conf.print() << ")." << std::endl;
-        error = true;
-        break;
+      try {
+        kernel = isa::OpenCL::compile("BlackScholes", *code, "-cl-fast-relaxed-math -Werror", clContext, clDevices->at(clDeviceID));
+      } catch ( isa::OpenCL::OpenCLError & err ) {
+        std::cerr << err.what() << std::endl;
+        delete code;
+        return -2;
       }
-    }
-    if ( error ) {
-      return -2;
-    }*/
+      delete code;
 
-    std::cout << inputSize << " " << outputSize << " ";
-    std::cout << conf.print() << " ";
-    std::cout << std::setprecision(3);
-    std::cout << gbytes / timer.getAverageTime() << " ";
-    std::cout << std::setprecision(6);
-    std::cout << timer.getAverageTime() << " " << timer.getStandardDeviation() << " " << timer.getCoefficientOfVariation() << std::endl;
+
+      cl::NDRange global(conf.getNrThreadsD0() * 480); // 60 * 1024
+      cl::NDRange local(conf.getNrThreadsD0());
+
+      kernel->setArg(0, call_d);
+      kernel->setArg(1, put_d);
+      kernel->setArg(2, S_d);
+      kernel->setArg(3, X_d);
+      kernel->setArg(4, T_d);
+      kernel->setArg(5, R);
+      kernel->setArg(6, V);
+      kernel->setArg(7, inputSize);
+
+      try {
+        // Warm-up run
+        clQueues->at(clDeviceID)[0].finish();
+        clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
+        clEvent.wait();
+        // Tuning runs
+        for ( unsigned int iteration = 0; iteration < nrIterations; iteration++ ) {
+          timer.start();
+          clQueues->at(clDeviceID)[0].enqueueNDRangeKernel(*kernel, cl::NullRange, global, local, 0, &clEvent);
+          clEvent.wait();
+          timer.stop();
+        }
+        //clQueues->at(clDeviceID)[0].enqueueReadBuffer(call_d, CL_TRUE, 0, output.size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
+        clEvent.wait();
+      } catch ( cl::Error & err ) {
+        std::cerr << "OpenCL kernel execution error (" << inputSize << ", " << outputSize << "), (";
+        std::cerr << conf.print();
+        std::cerr << "), (";
+        std::cerr << isa::utils::toString(conf.getNrThreadsD0() * (inputSize / conf.getNrItemsPerBlock() / conf.getVector())) << "): ";
+        std::cerr << isa::utils::toString(err.err()) << std::endl;
+        delete kernel;
+        if ( err.err() == -4 || err.err() == -61 ) {
+          return -1;
+        }
+        return -2;
+      }
+      delete kernel;
+
+      /*bool error = false;
+      for ( auto item = output.begin(); item != output.end(); ++item ) {
+        if ( !isa::utils::same(*item, (magicValue * (inputSize / outputSize))) ) {
+          std::cerr << "Output error (" << inputSize << ", " << outputSize << ") (" << conf.print() << ")." << std::endl;
+          error = true;
+          break;
+        }
+      }
+      if ( error ) {
+        return -2;
+      }*/
+
+      std::cout << inputSize << " " << outputSize << " ";
+      std::cout << conf.print() << " ";
+      std::cout << std::setprecision(3);
+      std::cout << gbytes / timer.getAverageTime() << " ";
+      std::cout << std::setprecision(6);
+      std::cout << timer.getAverageTime() << " " << timer.getStandardDeviation() << " " << timer.getCoefficientOfVariation() << std::endl;
+    }
   }
 
   std::cout << std::endl;
