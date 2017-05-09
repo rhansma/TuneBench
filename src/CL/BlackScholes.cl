@@ -9,7 +9,7 @@
  *
  */
 
-#if(0)
+#if(1)
 #define EXP(a) native_exp(a)
     #define LOG(a) native_log(a)
     #define SQRT(a) native_sqrt(a)
