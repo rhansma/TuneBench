@@ -32,12 +32,10 @@ namespace TuneBench {
     public:
         BlackScholesConf();
         // Get
-        inline unsigned int getNrItemsPerBlock() const;
         inline unsigned int getVector() const;
         inline unsigned int getLoopUnrolling() const;
         inline unsigned int getInputSize() const;
         // Set
-        inline void setNrItemsPerBlock(unsigned int items);
         inline void setVector(unsigned int vector);
         inline void setLoopUnrolling(unsigned int loopUnrolling);
         inline void setInputSize(unsigned int inputSize);
@@ -54,9 +52,6 @@ namespace TuneBench {
 
 
 // Implementations
-    inline unsigned int BlackScholesConf::getNrItemsPerBlock() const {
-      return nrItemsPerBlock;
-    }
 
     inline unsigned int BlackScholesConf::getVector() const {
       return vector;
@@ -68,10 +63,6 @@ namespace TuneBench {
 
     inline unsigned int BlackScholesConf::getInputSize() const {
       return inputSize;
-    }
-
-    inline void BlackScholesConf::setNrItemsPerBlock(unsigned int items) {
-      nrItemsPerBlock = items;
     }
 
     inline void BlackScholesConf::setVector(unsigned int vector) {
