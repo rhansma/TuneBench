@@ -49,10 +49,7 @@ int main(int argc, char * argv[]) {
   unsigned int nrIterations = 0;
   unsigned int clPlatformID = 0;
   unsigned int clDeviceID = 0;
-  unsigned int vectorSize = 0;
   unsigned int maxThreads = 0;
-  unsigned int maxItems = 0;
-  unsigned int maxVector = 0;
   unsigned int inputSize = 0;
   unsigned int loopUnrolling = 0;
   TuneBench::BlackScholesConf conf;
