@@ -40,7 +40,7 @@ namespace TuneBench {
       code->assign(buffer.str());
 
       if(conf.getLoopUnrolling() >= 1) {
-        std::string loop_sDecls = "for(unsigned int opt = get_global_id(0); opt < optN; opt += (get_global_size(0) + <%OPT_COUNT%>)) {\n"
+        std::string loop_sDecls = "for(unsigned int opt = (get_global_id(0) + (get_global_id(0) + <%OPT_SIZE%>)); opt < optN; opt += (get_global_size(0) + <%OPT_COUNT%>)) {\n"
             "float S; float X; float T; float sqrtT;"
             "float d1; float d2; float K; float CNDD1; "
             "float K2; float CNDD2; float expRT;"
@@ -53,6 +53,10 @@ namespace TuneBench {
 
         std::string opt_count_s = isa::utils::toString(conf.getLoopUnrolling());
         loop_sReplaced = isa::utils::replace(&loop_sDecls, "<%OPT_COUNT%>", opt_count_s);
+
+        std::string opt_size_s = isa::utils::toString(conf.getLoopUnrolling() - 1);
+        std::string t = loop_sReplaced->c_str();
+        loop_sReplaced = isa::utils::replace(&t, "<%OPT_SIZE%>", opt_size_s);
 
 
         for(unsigned int i = 0; i < conf.getLoopUnrolling(); i++) {
