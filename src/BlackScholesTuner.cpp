@@ -126,7 +126,7 @@ int main(int argc, char * argv[]) {
       delete code;
 
       std::vector<size_t> clMaxWorkItemSize = (clDevices->at(clDeviceID)).getInfo< CL_DEVICE_MAX_WORK_ITEM_SIZES >();
-      int globalSize = conf.getNrThreadsD0() * 480;
+      int globalSize = conf.getNrThreadsD0() * 640;
       int maxGlobalSize = (clMaxWorkItemSize[0] * clMaxWorkItemSize[1]);
       /* Stop when exceeding maximum work group size */
       if(conf.getNrThreadsD0() > clMaxWorkItemSize[0]) {
