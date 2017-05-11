@@ -40,7 +40,7 @@ namespace TuneBench {
       code->assign(buffer.str());
 
       if(conf.getLoopUnrolling() >= 1) {
-        std::string loop_sDecls = "for(unsigned int opt = get_global_id(0); opt < optN; opt += (get_global_size(0) + <%OPT_COUNT%>)) {\n"
+        /*std::string loop_sDecls = "for(unsigned int opt = get_global_id(0); opt + <%OPT_COUNT%> < optN; opt += get_global_size(0)) {\n"
                                     "float<%OPT_COUNT%> S; float<%OPT_COUNT%> X; float<%OPT_COUNT%> T; float<%OPT_COUNT%> sqrtT;"
                                     "float<%OPT_COUNT%> d1; float<%OPT_COUNT%> d2; float<%OPT_COUNT%> K; float<%OPT_COUNT%> CNDD1; "
                                     "float<%OPT_COUNT%> K2; float<%OPT_COUNT%> CNDD2; float<%OPT_COUNT%> expRT;"
@@ -68,7 +68,25 @@ namespace TuneBench {
                                       "    //Calculate Call and Put simultaneously\n"
                                       "    expRT = EXP(- R * T);\n"
                                       "    vstore<%OPT_COUNT%>((S * CNDD1 - X * expRT * CNDD2), opt, d_Call);\n"
-                                      "    vstore<%OPT_COUNT%>((X * expRT * (1.0f - CNDD2) - S * (1.0f - CNDD1)), opt, d_Put);\n";
+                                      "    vstore<%OPT_COUNT%>((X * expRT * (1.0f - CNDD2) - S * (1.0f - CNDD1)), opt, d_Put);\n";*/
+        std::string loop_sDecls = "for(unsigned int opt = get_global_id(0); opt < optN; opt += get_global_size(0)) {\n"
+            "float S; float X; float T; float sqrtT;"
+            "float d1; float d2; float K; float CNDD1; "
+            "float K2; float CNDD2; float expRT;"
+            "<%IFD1%>"
+            "\n"
+            "    K2 = 1.0f / (1.0f + 0.2316419f * fabs(d2));\n"
+            "\n"
+            "    CNDD2 = RSQRT2PI * EXP(- 0.5f * d2 * d2) *\n"
+            "                  (K2 * (A1 + K2 * (A2 + K2 * (A3 + K2 * (A4 + K2 * A5)))));\n"
+            "\n"
+            "<%IFD2%>"
+            "\n"
+            "    //Calculate Call and Put simultaneously\n"
+            "    expRT = EXP(- R * T);\n"
+            "    d_Call[opt] = (S * CNDD1 - X * expRT * CNDD2);\n"
+            "    d_Put[opt] = (X * expRT * (1.0f - CNDD2) - S * (1.0f - CNDD1));\n";
+
 
 
         std::string * loop_sReplaced = 0;
@@ -80,14 +98,31 @@ namespace TuneBench {
 
 
         for(unsigned int i = 0; i < conf.getLoopUnrolling() + 1; i++) {
-          char identifier[4] = {'x', 'y', 'z', 'w'};
+          std::vector<std::string> identifier = {"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "sA", "sB", "sC", "sD", "sE", "sF"};
           std::string * temp = 0;
-          std::string opt_s = isa::utils::toString(identifier[i]);//isa::utils::toString(i);
-          std::string ifd1_sTemplate = "    if(d1.<%OPT%> > 0)\n"
-              "      CNDD1.<%OPT%> = 1.0f - CNDD1.<%OPT%>;\n";
+          //std::string opt_s = isa::utils::toString(identifier[i]);
+          std::string opt_s = isa::utils::toString(i);
+          /*std::string ifd1_sTemplate = "    if(d1.<%OPT%> > 0)\n"
+              "      CNDD1.<%OPT%> = 1.0f - CNDD1.<%OPT%>;\n";*/
+          std::string ifd1_sTemplate = "\n    S = d_S[opt];\n"
+              "    X = d_X[opt];\n"
+              "    T = d_T[opt];\n"
+              "\n"
+              "    sqrtT = SQRT(T);\n"
+              "       d1 = (LOG(S / X) + (R + 0.5f * V * V) * T) / (V * sqrtT);\n"
+              "       d2 = d1 - V * sqrtT;\n"
+              "        K = 1.0f / (1.0f + 0.2316419f * fabs(d1));\n"
+              "\n"
+              "    CNDD1 = RSQRT2PI * EXP(- 0.5f * d1 * d1) *\n"
+              "                  (K * (A1 + K * (A2 + K * (A3 + K * (A4 + K * A5)))));\n"
+              "\n"
+              "    if(d1 > 0)\n"
+              "      CNDD1 = 1.0f - CNDD1;\n";
 
-          std::string ifd2_sTemplate = "    if(d2.<%OPT%> > 0)\n"
-              "      CNDD2.<%OPT%> = 1.0f - CNDD2.<%OPT%>;\n";
+          /*std::string ifd2_sTemplate = "    if(d2.<%OPT%> > 0)\n"
+              "      CNDD2.<%OPT%> = 1.0f - CNDD2.<%OPT%>;\n";*/
+          std::string ifd2_sTemplate = "    if(d2 > 0)\n"
+              "      CNDD2 = 1.0f - CNDD2;\n";
 
           temp = isa::utils::replace(&ifd1_sTemplate, "<%OPT%>", opt_s);
           ifd1_s->append(*temp);

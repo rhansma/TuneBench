@@ -90,7 +90,7 @@ int main(int argc, char * argv[]) {
   }
 
   std::cout << std::fixed << std::endl;
-  std::cout << "inputSize outputSize *configuration* GB/s time stdDeviation COV" << std::endl << std::endl;
+  std::cout << "inputSize outputSize *configuration* GLOPS GB/s time stdDeviation COV" << std::endl << std::endl;
 
   for(unsigned int unroll = 0; unroll <= loopUnrolling; unroll++) {
     conf.setLoopUnrolling(unroll);
@@ -100,6 +100,7 @@ int main(int argc, char * argv[]) {
 
       // Generate kernel
       unsigned int outputSize = inputSize;
+      double gflops = isa::utils::giga(static_cast< uint64_t >(inputSize) * 56.0);
       double gbytes = isa::utils::giga((static_cast< uint64_t >(inputSize) * sizeof(inputDataType)) + (static_cast< uint64_t >(outputSize) * sizeof(outputDataType)));
       std::vector< outputDataType > output(outputSize);
       cl::Event clEvent;
@@ -124,8 +125,21 @@ int main(int argc, char * argv[]) {
       }
       delete code;
 
+      std::vector<size_t> clMaxWorkItemSize = (clDevices->at(clDeviceID)).getInfo< CL_DEVICE_MAX_WORK_ITEM_SIZES >();
+      int globalSize = conf.getNrThreadsD0() * 480;
+      int maxGlobalSize = (clMaxWorkItemSize[0] * clMaxWorkItemSize[1]);
+      /* Stop when exceeding maximum work group size */
+      if(conf.getNrThreadsD0() > clMaxWorkItemSize[0]) {
+        std::cout << "Number of threads is greater than maximum possible value, stopping execution" << std::endl;
+        break;
+      }
 
-      cl::NDRange global(conf.getNrThreadsD0() * 480); // 60 * 1024
+      /* Limit global size to maximum global size supported by the hardware */
+      if(globalSize > maxGlobalSize) {
+        globalSize = maxGlobalSize;
+      }
+
+      cl::NDRange global(globalSize); // 60 * 1024
       cl::NDRange local(conf.getNrThreadsD0());
 
       kernel->setArg(0, call_d);
@@ -149,7 +163,6 @@ int main(int argc, char * argv[]) {
           clEvent.wait();
           timer.stop();
         }
-        //clQueues->at(clDeviceID)[0].enqueueReadBuffer(call_d, CL_TRUE, 0, output.size() * sizeof(outputDataType), reinterpret_cast< void * >(output.data()), 0, &clEvent);
         clEvent.wait();
       } catch ( cl::Error & err ) {
         std::cerr << "OpenCL kernel execution error (" << inputSize << ", " << outputSize << "), (";
@@ -165,21 +178,10 @@ int main(int argc, char * argv[]) {
       }
       delete kernel;
 
-      /*bool error = false;
-      for ( auto item = output.begin(); item != output.end(); ++item ) {
-        if ( !isa::utils::same(*item, (magicValue * (inputSize / outputSize))) ) {
-          std::cerr << "Output error (" << inputSize << ", " << outputSize << ") (" << conf.print() << ")." << std::endl;
-          error = true;
-          break;
-        }
-      }
-      if ( error ) {
-        return -2;
-      }*/
-
       std::cout << inputSize << " " << outputSize << " ";
       std::cout << conf.print() << " ";
       std::cout << std::setprecision(3);
+      std::cout << gflops / timer.getAverageTime() << " ";
       std::cout << gbytes / timer.getAverageTime() << " ";
       std::cout << std::setprecision(6);
       std::cout << timer.getAverageTime() << " " << timer.getStandardDeviation() << " " << timer.getCoefficientOfVariation() << std::endl;
