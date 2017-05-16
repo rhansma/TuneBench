@@ -39,11 +39,12 @@ namespace TuneBench {
 
       code->assign(buffer.str());
 
-      if(conf.getLoopUnrolling() == 1 || conf.getLoopUnrolling() == 3 || conf.getLoopUnrolling() == 7 || conf.getLoopUnrolling() == 15) {
-        std::string loop_sDecls = "for(unsigned int opt = (get_global_id(0) + (get_global_id(0) * <%OPT_COUNT%>)); opt < optN; opt += (get_global_size(0) + (get_global_size(0) * <%OPT_COUNT%>))) {\n"
+      if(conf.getLoopUnrolling() > 0) {
+        std::string loop_sDecls = "for(unsigned int opt = get_global_id(0); (opt + <%OPT_COUNT%>) < optN; opt += get_global_size(0)) {\n"
             "float<%OPT_COUNT%> S; float<%OPT_COUNT%> X; float<%OPT_COUNT%> T; float<%OPT_COUNT%> sqrtT;"
             "float<%OPT_COUNT%> d1; float<%OPT_COUNT%> d2; float<%OPT_COUNT%> K; float<%OPT_COUNT%> CNDD1; "
-            "float<%OPT_COUNT%> K2; float<%OPT_COUNT%> CNDD2; float<%OPT_COUNT%> expRT;\n"
+            "float<%OPT_COUNT%> K2; float<%OPT_COUNT%> CNDD2; float<%OPT_COUNT%> expRT;"
+            "float<%OPT_COUNT%> tCall; float<%OPT_COUNT%> tPut;\n"
             "    S = vload<%OPT_COUNT%>(opt, d_S);\n"
             "    X = vload<%OPT_COUNT%>(opt, d_X);\n"
             "    T = vload<%OPT_COUNT%>(opt, d_T);\n"
@@ -66,8 +67,12 @@ namespace TuneBench {
             "<%IFD2%>"
             "    //Calculate Call and Put simultaneously\n"
             "    expRT = EXP(- R * T);\n"
-            "    vstore<%OPT_COUNT%>((S * CNDD1 - X * expRT * CNDD2), opt, d_Call);\n"
-            "    vstore<%OPT_COUNT%>((X * expRT * (1.0f - CNDD2) - S * (1.0f - CNDD1)), opt, d_Put);\n";
+            "    tCall = (S * CNDD1 - X * expRT * CNDD2);\n"
+            "    tPut = (X * expRT * (1.0f - CNDD2) - S * (1.0f - CNDD1));\n"
+            /*"    printf(\"opt = <%d,%d>\\n\", opt, opt + 1);\n"
+            "    printf(\"v = <%d,%d>\\n\", d_Call[opt], d_Call[opt + 1]);\n"*/
+            "    vstore<%OPT_COUNT%>(tCall, opt, d_Call);\n"
+            "    vstore<%OPT_COUNT%>(tPut, opt, d_Put);\n";
 
 
 

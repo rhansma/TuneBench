@@ -126,7 +126,8 @@ int main(int argc, char * argv[]) {
       delete code;
 
       std::vector<size_t> clMaxWorkItemSize = (clDevices->at(clDeviceID)).getInfo< CL_DEVICE_MAX_WORK_ITEM_SIZES >();
-      int globalSize = conf.getNrThreadsD0() * 640;
+      unsigned int loopUnroll = std::max(conf.getLoopUnrolling() + 1, (unsigned int)1);
+      int globalSize = conf.getNrThreadsD0() * (inputSize / conf.getNrThreadsD0() / loopUnroll); //640;
       int maxGlobalSize = (clMaxWorkItemSize[0] * clMaxWorkItemSize[1]);
       /* Stop when exceeding maximum work group size */
       if(conf.getNrThreadsD0() > clMaxWorkItemSize[0]) {
@@ -168,7 +169,7 @@ int main(int argc, char * argv[]) {
         std::cerr << "OpenCL kernel execution error (" << inputSize << ", " << outputSize << "), (";
         std::cerr << conf.print();
         std::cerr << "), (";
-        std::cerr << isa::utils::toString(conf.getNrThreadsD0() * (inputSize / conf.getVector())) << "): ";
+        std::cerr << isa::utils::toString(conf.getNrThreadsD0() * (inputSize / loopUnroll)) << "): ";
         std::cerr << isa::utils::toString(err.err()) << std::endl;
         delete kernel;
         if ( err.err() == -4 || err.err() == -61 ) {

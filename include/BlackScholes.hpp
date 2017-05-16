@@ -70,6 +70,10 @@ namespace TuneBench {
     }
 
     inline void BlackScholesConf::setLoopUnrolling(unsigned int loopUnrolling) {
+      if(loopUnrolling != 1 && loopUnrolling != 3 && loopUnrolling != 7 && loopUnrolling != 15) {
+        loopUnrolling = 0;
+      }
+
       this->loopUnrolling = loopUnrolling;
     }
 
