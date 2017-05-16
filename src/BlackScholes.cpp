@@ -39,8 +39,8 @@ namespace TuneBench {
 
       code->assign(buffer.str());
 
-      if(conf.getLoopUnrolling() == 2) {
-        std::string loop_sDecls = "for(unsigned int opt = get_global_id(0); opt + <%OPT_COUNT%> < optN; opt += get_global_size(0)) {\n"
+      if(conf.getLoopUnrolling() > 0) {
+        std::string loop_sDecls = "for(unsigned int opt = get_global_id(0); opt * <%OPT_DIFF%> < optN; opt += get_global_size(0)) {\n"
             "float<%OPT_DIFF%> S; float<%OPT_DIFF%> X; float<%OPT_DIFF%> T; float<%OPT_DIFF%> sqrtT;"
             "float<%OPT_DIFF%> d1; float<%OPT_DIFF%> d2; float<%OPT_DIFF%> K; float<%OPT_DIFF%> CNDD1; "
             "float<%OPT_DIFF%> K2; float<%OPT_DIFF%> CNDD2; float<%OPT_DIFF%> expRT;"

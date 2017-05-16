@@ -94,6 +94,10 @@ int main(int argc, char * argv[]) {
 
   for(unsigned int unroll = 0; unroll <= loopUnrolling; unroll++) {
     conf.setLoopUnrolling(unroll);
+    /* If set value is not the same as retrieved value, the value is illegal thus no point in tuning */
+    if(unroll != conf.getLoopUnrolling()) {
+      continue;
+    }
     std::cout << std::endl;
     for(unsigned int threads = 2; threads <= maxThreads; threads *= 2) {
       conf.setNrThreadsD0(threads);
