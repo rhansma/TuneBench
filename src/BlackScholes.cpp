@@ -40,7 +40,7 @@ namespace TuneBench {
       code->assign(buffer.str());
 
       if(conf.getLoopUnrolling() >= 1) {
-        std::string loop_sDecls = "for(unsigned int opt = get_global_id(0); opt < optN; opt += (get_global_size(0) + <%OPT_COUNT%>)) {\n"
+        std::string loop_sDecls = "for(unsigned int opt = get_global_id(0); opt + <%OPT_COUNT%> < optN; opt += get_global_size(0)) {\n"
             "float S; float X; float T; float sqrtT;"
             "float d1; float d2; float K; float CNDD1; "
             "float K2; float CNDD2; float expRT;"
@@ -51,7 +51,7 @@ namespace TuneBench {
         std::string * loop_sReplaced = 0;
         std::string * ifd1_s = new std::string();
 
-        std::string opt_count_s = isa::utils::toString(conf.getLoopUnrolling());
+        std::string opt_count_s = isa::utils::toString(conf.getLoopUnrolling() - 1);
         loop_sReplaced = isa::utils::replace(&loop_sDecls, "<%OPT_COUNT%>", opt_count_s);
 
 
@@ -78,6 +78,8 @@ namespace TuneBench {
               "    CNDD2 = RSQRT2PI * EXP(- 0.5f * d2 * d2) *\n"
               "                  (K2 * (A1 + K2 * (A2 + K2 * (A3 + K2 * (A4 + K2 * A5)))));\n"
               "\n"
+              "    if(d2 > 0)\n"
+              "      CNDD2 = 1.0f - CNDD2;"
               "    //Calculate Call and Put simultaneously\n"
               "    expRT = EXP(- R * T);\n"
               "    d_Call[opt + <%OPT%>] = (S * CNDD1 - X * expRT * CNDD2);\n"
