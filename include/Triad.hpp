@@ -20,6 +20,10 @@
 
 #pragma once
 
+namespace Triad {
+    int runKernel(int argc, char * argv[]);
+}
+
 namespace TuneBench {
 
 class TriadConf : public isa::OpenCL::KernelConf {

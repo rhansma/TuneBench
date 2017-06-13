@@ -42,6 +42,9 @@ int main(int argc, char * argv[]) {
     return 1;
   }
 
+  std::string inputDataName("float");
+  std::string outputDataName("float");
+
   std::string * code = TuneBench::getMDOpenCL(conf, inputDataName, nrAtoms, LJ1, LJ2);
   std::cout << std::endl;
   std::cout << *code << std::endl;

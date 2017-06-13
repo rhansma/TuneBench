@@ -22,6 +22,10 @@
 #ifndef STENCIL_HPP
 #define STENCIL_HPP
 
+namespace Stencil {
+    int runKernel(int argc, char * argv[]);
+}
+
 namespace TuneBench {
 
 class Stencil2DConf : public isa::OpenCL::KernelConf {

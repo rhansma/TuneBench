@@ -21,6 +21,10 @@
 #ifndef REDUCTION_HPP
 #define REDUCTION_HPP
 
+namespace Reduction {
+    int runKernel(int argc, char * argv[]);
+}
+
 namespace TuneBench {
 
 class ReductionConf : public isa::OpenCL::KernelConf {

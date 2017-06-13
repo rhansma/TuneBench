@@ -43,6 +43,9 @@ int main(int argc, char * argv[]) {
     return 1;
   }
 
+  std::string inputDataName("float");
+  std::string outputDataName("float");
+
   std::string * code = TuneBench::getStencil2DOpenCL(conf, inputDataName, matrixWidth, padding);
   std::cout << std::endl;
   std::cout << *code << std::endl;

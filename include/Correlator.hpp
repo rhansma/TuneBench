@@ -20,6 +20,9 @@
 
 #pragma once
 
+namespace Correlator {
+    int runKernel(int argc, char * argv[]);
+}
 namespace TuneBench {
 
 class CorrelatorConf : public isa::OpenCL::KernelConf {

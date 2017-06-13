@@ -21,10 +21,12 @@
 #include <utils.hpp>
 #include <Kernel.hpp>
 
-
-
 #ifndef BLACKSCHOLES_HPP
 #define BLACKSCHOLES_HPP
+
+namespace BlackScholes {
+    int runKernel(int argc, char * argv[]);
+}
 
 namespace TuneBench {
 
@@ -80,7 +82,9 @@ namespace TuneBench {
       this->inputSize = inputSize;
     }
 
+    namespace BlackScholes {
+        int runKernel(int argc, char * argv[]);
+    }
 } // TuneBench
-
 #endif
 

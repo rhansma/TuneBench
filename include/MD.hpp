@@ -21,6 +21,10 @@
 #ifndef MD_HPP
 #define MD_HPP
 
+namespace MD {
+    int runKernel(int argc, char * argv[]);
+}
+
 namespace TuneBench {
 
 // Sequential

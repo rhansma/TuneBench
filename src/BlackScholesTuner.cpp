@@ -28,6 +28,11 @@
 #include <Timer.hpp>
 #include <Stats.hpp>
 
+
+//using namespace TuneBench;
+
+namespace BlackScholes {
+//    using namespace TuneBench;
 ////////////////////////////////////////////////////////////////////////////////
 // Random float helper
 // NVIDIA SDK helper function
@@ -41,7 +46,10 @@ float randFloat(float low, float high){
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * inputS, std::vector< inputDataType > * inputX, std::vector< inputDataType > * inputT,
                             cl::Buffer * S_d, cl::Buffer * X_d, cl::Buffer * T_d, cl::Buffer * call_d, cl::Buffer * put_d, const unsigned int outputSize);
 
-int main(int argc, char * argv[]) {
+    std::string inputDataName("float");
+    std::string outputDataName("float");
+
+int runKernel(int argc, char * argv[]) {
   // Application specific parameters
   const float                    R = 0.02f;
   const float                    V = 0.30f;
@@ -215,4 +223,10 @@ void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue,
     throw;
   }
 }
-
+}
+//}
+/*
+using namespace BlackScholes;
+int main(int argc, char * argv[]) {
+  return BlackScholes::runKernel(argc, argv);
+}*/
