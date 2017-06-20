@@ -25,7 +25,8 @@
 #define BLACKSCHOLES_HPP
 
 namespace BlackScholes {
-    int runKernel(int argc, char * argv[]);
+    int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int inputSize,
+                  unsigned int maxThreads, unsigned int loopUnrolling);
 }
 
 namespace TuneBench {

@@ -35,51 +35,18 @@ namespace Correlator {
     std::string inputDataName("float");
     std::string outputDataName("float");
 
-    int runKernel(int argc, char * argv[]) {
+    int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int padding, unsigned int nrIterations, unsigned int vectorSize, unsigned int maxThreads, unsigned int maxItems, unsigned int maxUnroll, bool sequentialTime, bool parallelTime, unsigned int cellWidth, unsigned int cellHeight, unsigned int nrChannels, unsigned int nrStations, unsigned int nrSamples) {
       bool reInit = true;
-      unsigned int padding = 0;
-      unsigned int nrIterations = 0;
-      unsigned int clPlatformID = 0;
-      unsigned int clDeviceID = 0;
-      cl_ulong constantMemoryAmount = 0;
-      // Constraints
-      unsigned int vectorSize = 0;
-      unsigned int maxThreads = 0;
-      unsigned int maxItems = 0;
-      unsigned int maxUnroll = 0;
-      // Scenario
-      unsigned int nrChannels = 0;
-      unsigned int nrStations = 0;
-      unsigned int nrSamples = 0;
       unsigned int nrBaselines = 0;
       unsigned int nrCells = 0;
+      cl_ulong constantMemoryAmount = 0;
+
       // Configuration
       TuneBench::CorrelatorConf conf;
 
-      try {
-        isa::utils::ArgumentList args(argc, argv);
-
-        clPlatformID = args.getSwitchArgument< unsigned int >("-opencl_platform");
-        clDeviceID = args.getSwitchArgument< unsigned int >("-opencl_device");
-        padding = args.getSwitchArgument< unsigned int >("-padding");
-        nrIterations = args.getSwitchArgument< unsigned int >("-iterations");
-        vectorSize = args.getSwitchArgument< unsigned int >("-vector");
-        maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
-        maxItems = args.getSwitchArgument< unsigned int >("-max_items");
-        maxUnroll = args.getSwitchArgument< unsigned int >("-max_unroll");
-        conf.setSequentialTime(args.getSwitch("-sequential_time"));
-        conf.setParallelTime(args.getSwitch("-parallel_time"));
-        conf.setCell(args.getSwitchArgument< unsigned int >("-width"), args.getSwitchArgument< unsigned int >("-height"));
-        nrChannels = args.getSwitchArgument< unsigned int >("-channels");
-        nrStations = args.getSwitchArgument< unsigned int >("-stations");
-        nrSamples = args.getSwitchArgument< unsigned int >("-samples");
-      } catch ( isa::utils::EmptyCommandLine & err ) {
-        std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -padding ... -iterations ... -vector ... -max_threads ... -max_items ... -max_unroll ... [-sequential_time | -parallel_time] -width ... -height ... -channels ... -stations ... -samples ..." << std::endl;
-        return 1;
-      } catch ( std::exception & err ) {
-        std::cerr << err.what() << std::endl;
-        return 1;
-      }
+      conf.setSequentialTime(sequentialTime);
+      conf.setParallelTime(parallelTime);
+      conf.setCell(cellWidth, cellHeight);
 
       cl::Context clContext;
       std::vector< cl::Platform > * clPlatforms = new std::vector< cl::Platform >();

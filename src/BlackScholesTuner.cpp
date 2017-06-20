@@ -20,7 +20,6 @@
 
 #include <configuration.hpp>
 
-#include <ArgumentList.hpp>
 #include <InitializeOpenCL.hpp>
 #include <Kernel.hpp>
 #include <BlackScholes.hpp>
@@ -49,35 +48,13 @@ void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue,
     std::string inputDataName("float");
     std::string outputDataName("float");
 
-int runKernel(int argc, char * argv[]) {
+int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int inputSize,
+              unsigned int maxThreads, unsigned int loopUnrolling) {
   // Application specific parameters
   const float                    R = 0.02f;
   const float                    V = 0.30f;
 
-  unsigned int nrIterations = 0;
-  unsigned int clPlatformID = 0;
-  unsigned int clDeviceID = 0;
-  unsigned int maxThreads = 0;
-  unsigned int inputSize = 0;
-  unsigned int loopUnrolling = 0;
   TuneBench::BlackScholesConf conf;
-
-  try {
-    isa::utils::ArgumentList args(argc, argv);
-
-    clPlatformID = args.getSwitchArgument< unsigned int >("-opencl_platform");
-    clDeviceID = args.getSwitchArgument< unsigned int >("-opencl_device");
-    nrIterations = args.getSwitchArgument< unsigned int >("-iterations");
-    inputSize = args.getSwitchArgument< unsigned int >("-input_size");
-    maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
-    loopUnrolling = args.getSwitchArgument< unsigned int >("-loop_unrolling");
-  } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -input_size ... -max_threads ... --loop_unrolling ..." << std::endl;
-    return 1;
-  } catch ( std::exception & err ) {
-    std::cerr << err.what() << std::endl;
-    return 1;
-  }
 
   cl::Context clContext;
   std::vector< cl::Platform > * clPlatforms = new std::vector< cl::Platform >();

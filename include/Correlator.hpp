@@ -21,7 +21,7 @@
 #pragma once
 
 namespace Correlator {
-    int runKernel(int argc, char * argv[]);
+    int runKernel(unsigned int clPlatformId, unsigned int clDeviceID, unsigned int padding, unsigned int nrIterations, unsigned int vectorSize, unsigned int maxThreads, unsigned int maxItems, unsigned int maxUnroll, bool sequentialTime, bool parallelTime, unsigned int cellWidth, unsigned int cellHeight, unsigned int nrChannels, unsigned int nrStations, unsigned int nrSamples);
 }
 namespace TuneBench {
 

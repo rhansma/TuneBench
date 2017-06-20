@@ -23,7 +23,7 @@
 #define STENCIL_HPP
 
 namespace Stencil {
-    int runKernel(int argc, char * argv[]);
+    int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int vectorSize, unsigned int padding, unsigned int maxThreads, unsigned int maxItems, unsigned int matrixWidth, bool localMemory);
 }
 
 namespace TuneBench {

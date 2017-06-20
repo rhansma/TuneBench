@@ -34,37 +34,11 @@ namespace Stencil {
     std::string inputDataName("float");
     std::string outputDataName("float");
 
-    int runKernel(int argc, char * argv[]) {
+    int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int vectorSize, unsigned int padding, unsigned int maxThreads, unsigned int maxItems, unsigned int matrixWidth, bool localMemory) {
       bool reInit = true;
-      unsigned int nrIterations = 0;
-      unsigned int clPlatformID = 0;
-      unsigned int clDeviceID = 0;
-      unsigned int vectorSize = 0;
-      unsigned int maxThreads = 0;
-      unsigned int maxItems = 0;
-      unsigned int matrixWidth = 0;
-      unsigned int padding = 0;
       TuneBench::Stencil2DConf conf;
 
-      try {
-        isa::utils::ArgumentList args(argc, argv);
-
-        clPlatformID = args.getSwitchArgument< unsigned int >("-opencl_platform");
-        clDeviceID = args.getSwitchArgument< unsigned int >("-opencl_device");
-        nrIterations = args.getSwitchArgument< unsigned int >("-iterations");
-        vectorSize = args.getSwitchArgument< unsigned int >("-vector");
-        padding = args.getSwitchArgument< unsigned int >("-padding");
-        maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
-        maxItems = args.getSwitchArgument< unsigned int >("-max_items");
-        matrixWidth = args.getSwitchArgument< unsigned int >("-matrix_width");
-        conf.setLocalMemory(args.getSwitch("-local"));
-      } catch ( isa::utils::EmptyCommandLine & err ) {
-        std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -vector ... -padding ... -max_threads ... -max_items ... -matrix_width ... [-local]" << std::endl;
-        return 1;
-      } catch ( std::exception & err ) {
-        std::cerr << err.what() << std::endl;
-        return 1;
-      }
+      conf.setLocalMemory(localMemory);
 
       cl::Context clContext;
       std::vector< cl::Platform > * clPlatforms = new std::vector< cl::Platform >();

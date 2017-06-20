@@ -21,7 +21,7 @@
 #pragma once
 
 namespace Triad {
-    int runKernel(int argc, char * argv[]);
+    int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int vectorSize, unsigned int maxThreads, unsigned int maxItems, unsigned int maxVector, unsigned int inputSize);
 }
 
 namespace TuneBench {
