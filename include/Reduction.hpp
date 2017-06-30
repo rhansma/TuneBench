@@ -21,6 +21,10 @@
 #ifndef REDUCTION_HPP
 #define REDUCTION_HPP
 
+namespace Reduction {
+    int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int vectorSize, unsigned int maxThreads, unsigned int maxItems, unsigned int maxVector, unsigned int inputSize);
+}
+
 namespace TuneBench {
 
 class ReductionConf : public isa::OpenCL::KernelConf {

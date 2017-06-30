@@ -58,6 +58,9 @@ int main(int argc, char * argv[]) {
     return 1;
   }
 
+  std::string inputDataName("float");
+  std::string outputDataName("float");
+
   nrCells = generateCellMap(conf, cellMapX, cellMapY, nrStations);
   std::string * code = TuneBench::getCorrelatorOpenCL(conf, inputDataName, padding, nrChannels, nrStations, nrSamples, nrPolarizations, nrCells);
   std::cout << std::endl;

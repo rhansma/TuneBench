@@ -22,6 +22,10 @@
 #ifndef STENCIL_HPP
 #define STENCIL_HPP
 
+namespace Stencil {
+    int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int vectorSize, unsigned int padding, unsigned int maxThreads, unsigned int maxItems, unsigned int matrixWidth, bool localMemory);
+}
+
 namespace TuneBench {
 
 class Stencil2DConf : public isa::OpenCL::KernelConf {

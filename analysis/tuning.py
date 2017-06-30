@@ -32,6 +32,10 @@ def tune(db_queue, table, benchmark, scenario):
     elif benchmark.lower() == "correlator":
         extra = "sequentialTime,parallelTime,constantMemory,width,height,"
         metrics = "GFLOPs,"
+    elif benchmark.lower() == "blackscholes":
+        extra = "vector,"
+        metrics = "GFLOPs,"
+    print("SELECT " + extra + "nrThreadsD0,nrThreadsD1,nrThreadsD2,nrItemsD0,nrItemsD1,nrItemsD2," + metrics + "time,time_err,variation FROM " + table + " WHERE (" + metrics.rstrip(",") + " = (SELECT MAX(" + metrics.rstrip(",") + ") FROM " + table + " WHERE (" + scenario + "))) AND (" + scenario + ")")
     db_queue.execute("SELECT " + extra + "nrThreadsD0,nrThreadsD1,nrThreadsD2,nrItemsD0,nrItemsD1,nrItemsD2," + metrics + "time,time_err,variation FROM " + table + " WHERE (" + metrics.rstrip(",") + " = (SELECT MAX(" + metrics.rstrip(",") + ") FROM " + table + " WHERE (" + scenario + "))) AND (" + scenario + ")")
     best = db_queue.fetchall()
     if len(best) > 0:

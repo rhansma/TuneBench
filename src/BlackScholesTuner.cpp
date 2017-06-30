@@ -20,7 +20,6 @@
 
 #include <configuration.hpp>
 
-#include <ArgumentList.hpp>
 #include <InitializeOpenCL.hpp>
 #include <Kernel.hpp>
 #include <BlackScholes.hpp>
@@ -28,6 +27,11 @@
 #include <Timer.hpp>
 #include <Stats.hpp>
 
+
+//using namespace TuneBench;
+
+namespace BlackScholes {
+//    using namespace TuneBench;
 ////////////////////////////////////////////////////////////////////////////////
 // Random float helper
 // NVIDIA SDK helper function
@@ -41,35 +45,16 @@ float randFloat(float low, float high){
 void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue, std::vector< inputDataType > * inputS, std::vector< inputDataType > * inputX, std::vector< inputDataType > * inputT,
                             cl::Buffer * S_d, cl::Buffer * X_d, cl::Buffer * T_d, cl::Buffer * call_d, cl::Buffer * put_d, const unsigned int outputSize);
 
-int main(int argc, char * argv[]) {
+    std::string inputDataName("float");
+    std::string outputDataName("float");
+
+int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int inputSize,
+              unsigned int maxThreads, unsigned int loopUnrolling) {
   // Application specific parameters
   const float                    R = 0.02f;
   const float                    V = 0.30f;
 
-  unsigned int nrIterations = 0;
-  unsigned int clPlatformID = 0;
-  unsigned int clDeviceID = 0;
-  unsigned int maxThreads = 0;
-  unsigned int inputSize = 0;
-  unsigned int loopUnrolling = 0;
   TuneBench::BlackScholesConf conf;
-
-  try {
-    isa::utils::ArgumentList args(argc, argv);
-
-    clPlatformID = args.getSwitchArgument< unsigned int >("-opencl_platform");
-    clDeviceID = args.getSwitchArgument< unsigned int >("-opencl_device");
-    nrIterations = args.getSwitchArgument< unsigned int >("-iterations");
-    inputSize = args.getSwitchArgument< unsigned int >("-input_size");
-    maxThreads = args.getSwitchArgument< unsigned int >("-max_threads");
-    loopUnrolling = args.getSwitchArgument< unsigned int >("-loop_unrolling");
-  } catch ( isa::utils::EmptyCommandLine & err ) {
-    std::cerr << argv[0] << " -opencl_platform ... -opencl_device ... -iterations ... -input_size ... -max_threads ... --loop_unrolling ..." << std::endl;
-    return 1;
-  } catch ( std::exception & err ) {
-    std::cerr << err.what() << std::endl;
-    return 1;
-  }
 
   cl::Context clContext;
   std::vector< cl::Platform > * clPlatforms = new std::vector< cl::Platform >();
@@ -94,6 +79,10 @@ int main(int argc, char * argv[]) {
 
   for(unsigned int unroll = 0; unroll <= loopUnrolling; unroll++) {
     conf.setLoopUnrolling(unroll);
+    /* If set value is not the same as retrieved value, the value is illegal thus no point in tuning */
+    if(unroll != conf.getLoopUnrolling()) {
+      continue;
+    }
     std::cout << std::endl;
     for(unsigned int threads = 2; threads <= maxThreads; threads *= 2) {
       conf.setNrThreadsD0(threads);
@@ -212,4 +201,10 @@ void initializeDeviceMemory(cl::Context & clContext, cl::CommandQueue * clQueue,
     throw;
   }
 }
-
+}
+//}
+/*
+using namespace BlackScholes;
+int main(int argc, char * argv[]) {
+  return BlackScholes::runKernel(argc, argv);
+}*/

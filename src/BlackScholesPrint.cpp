@@ -37,6 +37,8 @@ int main(int argc, char * argv[]) {
     return 1;
   }
 
+  std::string inputDataName("float");
+  std::string outputDataName("float");
   std::string * code = TuneBench::getBlackScholesOpenCL(conf, inputDataName, outputDataName);
 
   std::cout << std::endl;

@@ -21,10 +21,13 @@
 #include <utils.hpp>
 #include <Kernel.hpp>
 
-
-
 #ifndef BLACKSCHOLES_HPP
 #define BLACKSCHOLES_HPP
+
+namespace BlackScholes {
+    int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int inputSize,
+                  unsigned int maxThreads, unsigned int loopUnrolling);
+}
 
 namespace TuneBench {
 
@@ -70,10 +73,9 @@ namespace TuneBench {
     }
 
     inline void BlackScholesConf::setLoopUnrolling(unsigned int loopUnrolling) {
-      if(loopUnrolling != 1 && loopUnrolling != 3 && loopUnrolling != 7 && loopUnrolling != 15) {
+      if(loopUnrolling != 2 && loopUnrolling != 3 && loopUnrolling != 4 && loopUnrolling != 8 && loopUnrolling != 16) {
         loopUnrolling = 0;
       }
-
       this->loopUnrolling = loopUnrolling;
     }
 
@@ -81,7 +83,9 @@ namespace TuneBench {
       this->inputSize = inputSize;
     }
 
+    namespace BlackScholes {
+        int runKernel(int argc, char * argv[]);
+    }
 } // TuneBench
-
 #endif
 

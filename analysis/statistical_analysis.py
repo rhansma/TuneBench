@@ -29,6 +29,8 @@ def get_quartiles(db_queue, table, benchmark, scenario):
         metrics = "GFLOPs"
     elif benchmark.lower() == "correlator":
         metrics = "GFLOPs"
+    elif benchmark.lower() == "blackscholes":
+        metrics = "GFLOPs"
     db_queue.execute("SELECT COUNT(id) FROM " + table + " WHERE " + scenario)
     items = db_queue.fetchall()
     nr_items = items[0][0]
@@ -60,6 +62,8 @@ def get_histogram(db_queue, table, benchmark, scenario):
         metrics = "GFLOPs"
     elif benchmark.lower() == "correlator":
         metrics = "GFLOPs"
+    elif benchmark.lower() == "blackscholes":
+        metrics = "GFLOPs"
     db_queue.execute("SELECT " + metrics + " FROM " + table + " WHERE (" + scenario + ") ORDER BY " + metrics)
     items = db_queue.fetchall()
     for item in items:
@@ -74,6 +78,7 @@ def get_tuning_variability(db_queue, tables, benchmark, scenarios):
     """Return the coefficient of variability of the optimal configurations."""
     extra = ""
     metrics = ""
+
     if benchmark.lower() == "triad":
         extra = "vector,"
         metrics = "GBs,"
@@ -88,9 +93,13 @@ def get_tuning_variability(db_queue, tables, benchmark, scenarios):
     elif benchmark.lower() == "correlator":
         extra = "sequentialTime,parallelTime,constantMemory,width,height,"
         metrics = "GFLOPs,"
+    elif benchmark.lower() == "blackscholes":
+        extra = "vector,"
+        metrics = "GFLOPs,"
     parameters = list()
     for table in tables:
         for scenario in scenarios:
+            print("SELECT " + extra + "nrThreadsD0,nrThreadsD1,nrThreadsD2,nrItemsD0,nrItemsD1,nrItemsD2 FROM " + table + " WHERE (" + metrics.rstrip(",") + " = (SELECT MAX(" + metrics.rstrip(",") + ") FROM " + table + " WHERE (" + scenario + "))) AND (" + scenario + ")")
             db_queue.execute("SELECT " + extra + "nrThreadsD0,nrThreadsD1,nrThreadsD2,nrItemsD0,nrItemsD1,nrItemsD2 FROM " + table + " WHERE (" + metrics.rstrip(",") + " = (SELECT MAX(" + metrics.rstrip(",") + ") FROM " + table + " WHERE (" + scenario + "))) AND (" + scenario + ")")
             best = db_queue.fetchall()
             if len(parameters) == 0:

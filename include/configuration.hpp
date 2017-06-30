@@ -17,9 +17,7 @@
 
 // Define the data types
 typedef float inputDataType;
-std::string inputDataName("float");
 typedef float outputDataType;
-std::string outputDataName("float");
 
 // Magic value
 const unsigned int magicValue = 42;

@@ -21,6 +21,10 @@
 #ifndef MD_HPP
 #define MD_HPP
 
+namespace MD {
+    int runKernel(unsigned int clPlatformID, unsigned int clDeviceID, unsigned int nrIterations, unsigned int vectorSize, unsigned int maxThreads, unsigned int maxItems, unsigned int nrAtoms);
+}
+
 namespace TuneBench {
 
 // Sequential

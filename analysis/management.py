@@ -56,3 +56,8 @@ def load_file(db_queue, table, input_file, benchmark):
                 db_queue.execute("INSERT INTO " + table + " VALUES(NULL, " + tokens[0] + ", " + tokens[1] + ", " + tokens[2] + ", " + tokens[3] + ", " + tokens[4] + ", " + tokens[5]+ ", " + tokens[6] + ", " + tokens[7] + ", " + tokens[8] + ", " + tokens[9] + ", " + tokens[10].rstrip("\n") + ")")
             elif benchmark.lower() == "correlator":
                 db_queue.execute("INSERT INTO " + table + " VALUES(NULL, " + tokens[0] + ", " + tokens[1] + ", " + tokens[2] + ", " + tokens[3] + ", " + tokens[4] + ", " + tokens[5]+ ", " + tokens[6] + ", " + tokens[7] + ", " + tokens[8] + ", " + tokens[9] + ", " + tokens[10] + ", " + tokens[11] + ", " + tokens[12] + ", "  + tokens[13] + ", " + tokens[14] + ", " + tokens[15] + ", " + tokens[16] + ", " + tokens[17] + ", " + tokens[18] + ", " + tokens[19] + ", " + tokens[20].rstrip("\n") + ")")
+            elif benchmark.lower() == "blackscholes":
+                if tokens[0] == "inputSize" or tokens[0] == "OpenCL":
+                    continue
+                conf = tokens[2].split(sep=";")
+                db_queue.execute("INSERT INTO " + table + " VALUES(NULL, " + tokens[0] + ", " + conf[0] + ", " + conf[1] + ", 0, 0, 0, 0, 0, " + tokens[9] + ", " + tokens[8] + ", " + tokens[10] + ", " + tokens[11] + ", " + tokens[12].rstrip("\n") + ")")
