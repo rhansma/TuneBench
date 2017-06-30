@@ -66,6 +66,10 @@ elif COMMAND == "create":
             SCENARIO = "nrChannels INTEGER NOT NULL, nrStations INTEGER NOT NULL, nrSamples INTEGER NOT NULL, nrPolarizations INTEGER NOT NULL, nrBaselines INTEGER NOT NULL, nrCells INTEGER NOT NULL,"
             EXTRA = "sequentialTime TINYINT NOT NULL, parallelTime TINYINT NOT NULL, constantMemory TINYINT NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL,"
             METRICS = "GFLOPs FLOAT UNSIGNED NOT NULL,"
+        elif sys.argv[3].lower() == "blackscholes":
+            SCENARIO = "inputSize INTEGER NOT NULL,"
+            EXTRA = "vector INTEGER NOT NULL,"
+            METRICS = "GBs FLOAT UNSIGNED NOT NULL, GFLOPs FLOAT UNSIGNED NOT NULL,"
         management.create_table(DB_QUEUE, sys.argv[2], SCENARIO, EXTRA, METRICS)
 elif COMMAND == "delete":
     if len(sys.argv) != 3:
